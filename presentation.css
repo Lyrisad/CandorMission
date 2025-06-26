@@ -1,0 +1,325 @@
+/* Presentation Page Specific Styles */
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Hero Section */
+.presentation-hero {
+    height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(37, 100, 235, 0.8), rgba(146, 51, 234, 0.8));
+    border-bottom: 4px solid #4a4a4a;
+}
+
+.presentation-hero .hero-background {
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 100%;
+    height: 200%;
+    background: url('images/presentationHero.png') top center;
+    background-size: cover;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.presentation-hero .hero-content {
+    text-align: center;
+    color: white;
+    z-index: 1;
+    max-width: 800px;
+    padding: 0 2rem;
+}
+
+.presentation-hero .hero-title {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.presentation-hero .hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 3rem;
+    font-weight: 300;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Button/Link Styles */
+.open-book-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+}
+
+.open-book-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.open-book-btn i {
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .presentation-hero .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .presentation-hero .hero-subtitle {
+        font-size: 1.2rem;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .presentation-hero .hero-title {
+        font-size: 2rem;
+    }
+
+}
+
+/* Team Cards Section */
+.team-cards-section {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.team-cards-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 25% 25%, #e2e8f0 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, #cbd5e1 1.5px, transparent 1.5px),
+        radial-gradient(circle at 50% 50%, #94a3b8 2px, transparent 2px),
+        radial-gradient(circle at 10% 90%, #64748b 2.5px, transparent 2.5px),
+        radial-gradient(circle at 90% 10%, #475569 3px, transparent 3px);
+    background-size: 
+        40px 40px,
+        60px 60px,
+        80px 80px,
+        100px 100px,
+        120px 120px;
+    background-position: 
+        0 0,
+        20px 20px,
+        40px 40px,
+        60px 60px,
+        80px 80px;
+    opacity: 0.6;
+    z-index: 0;
+}
+
+.team-cards-section .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 3.5rem;
+    font-family: 'Bangers', 'Inter', Arial, sans-serif;
+    font-weight: 700;
+    color: #e8a74c;
+    letter-spacing: 2px;
+    margin-bottom: 3rem;
+    -webkit-text-stroke: 2px #111;
+    text-shadow:
+        2px 2px 0 #111,
+        4px 4px 12px rgba(0,0,0,0.15);
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    display: block;
+    border-radius: 0;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 4rem;
+    justify-items: center;
+}
+
+.pokemon-card {
+    width: 390px;
+    height: 550px;
+    background: white;
+    border-radius: 41px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    cursor: pointer;
+    border: 3px solid #e2e8f0;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+    will-change: transform, box-shadow;
+}
+
+.pokemon-card:hover {
+    border-color: #3b82f6;
+}
+
+.pokemon-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 38px 38px 0 0;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.pokemon-card:hover::before {
+    opacity: 0.05;
+}
+
+.pokemon-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.4),
+        transparent
+    );
+    transition: left 0.8s ease;
+    z-index: 2;
+}
+
+.pokemon-card:hover::after {
+    left: 100%;
+}
+
+.card-content {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    text-align: center;
+}
+
+/* Card Content Styles */
+.member-gif {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 38px;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: brightness(1) contrast(1);
+}
+
+.pokemon-card:hover .member-gif {
+    filter: brightness(1.1) contrast(1.1) saturate(1.2);
+    transform: scale(1.02);
+}
+
+.card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.member-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.member-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.member-description {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Responsive Design for Cards */
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 2.2rem;
+    }
+    
+    .cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .pokemon-card {
+        width: 250px;
+        height: 350px;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-title {
+        font-size: 1.3rem;
+    }
+    
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .pokemon-card {
+        width: 100%;
+        max-width: 280px;
+    }
+} 
