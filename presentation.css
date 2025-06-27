@@ -579,7 +579,7 @@ body {
 }
 
 .modal-name {
-    font-size: 3rem;
+    font-size: 4rem;
     font-weight: 700;
     margin-bottom: 1rem;
     color: #fff200;
@@ -589,12 +589,14 @@ body {
 }
 
 .modal-title {
-    font-size: 1.5rem;
+    font-size: 1.7rem;
+    font-style: italic;
     color: #3b82f6;
     margin-bottom: 2rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .modal-description {
