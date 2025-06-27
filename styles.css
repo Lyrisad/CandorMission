@@ -769,17 +769,52 @@ body {
 }
 
 .about-text h2 {
-    font-size: 2.5rem;
+    font-size: 2.7rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    color: white;
+    color: #e8a74c;
+    -webkit-text-stroke: 2px #111;
+    text-shadow:
+        2px 2px 0 #111,
+        4px 4px 12px rgba(0,0,0,0.15);
+    font-family: 'Bangers', 'Inter', Arial, sans-serif;
+    letter-spacing: 2px;
 }
 
 .about-text p {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
     color: white;
     margin-bottom: 1rem;
     line-height: 1.8;
+    font-weight: bold;
+}
+
+.about-text ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem 0;
+}
+
+.about-text li {
+    font-size: 1.3rem;
+    letter-spacing: 1px;
+    color: white;
+    line-height: 1.8;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-left: 0;
+}
+
+.about-text li::before {
+    content: '•';
+    color: #e8a74c;
+    font-weight: bold;
+    font-size: 1.5rem;
+    position: absolute;
+    left: -20px;
+    top: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .about-image {
@@ -789,8 +824,8 @@ body {
 }
 
 .image-placeholder {
-    width: 400px;
-    height: 400px;
+    width: 500px;
+    height: 500px;
     background: url('images/equipe.png') center center;
     background-size: cover;
     display: flex;
@@ -977,14 +1012,34 @@ body {
     }
 
     .about-text h2 {
-        font-size: 2rem;
+        font-size: 2.2rem;
         margin-bottom: 1rem;
+        text-align: center;
     }
 
     .about-text p {
-        font-size: 1rem;
+        font-size: 1.1rem;
         margin-bottom: 1.5rem;
         line-height: 1.6;
+        text-align: center;
+        font-weight: normal;
+        letter-spacing: 0.5px;
+    }
+
+    .about-text ul {
+        text-align: center;
+    }
+
+    .about-text li {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        letter-spacing: 0.5px;
+        font-weight: normal;
+    }
+
+    .about-text li::before {
+        left: -15px;
+        font-size: 1.3rem;
     }
 
     .image-placeholder {
@@ -1074,12 +1129,32 @@ body {
     .about-text h2 {
         font-size: 1.8rem;
         margin-bottom: 0.8rem;
+        text-align: center;
     }
 
     .about-text p {
-        font-size: 0.95rem;
+        font-size: 1rem;
         margin-bottom: 1.2rem;
         line-height: 1.5;
+        text-align: center;
+        font-weight: normal;
+        letter-spacing: 0.3px;
+    }
+
+    .about-text ul {
+        text-align: center;
+    }
+
+    .about-text li {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+        letter-spacing: 0.3px;
+        font-weight: normal;
+    }
+
+    .about-text li::before {
+        left: -12px;
+        font-size: 1.2rem;
     }
 
     .image-placeholder {

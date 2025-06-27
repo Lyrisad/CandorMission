@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 transition: opacity 0.3s ease;
                 pointer-events: none;
                 z-index: 10;
-                border-radius: 41px;
+                border-radius: 0px;
             `;
             card.appendChild(shine);
             return shine;
@@ -331,14 +331,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: linear-gradient(
-                    45deg,
-                    transparent 0%,
-                    rgba(255, 255, 255, 0.1) 25%,
-                    rgba(255, 255, 255, 0.3) 50%,
-                    rgba(255, 255, 255, 0.1) 75%,
-                    transparent 100%
-                );
                 opacity: 0;
                 transition: opacity 0.3s ease;
                 pointer-events: none;
@@ -514,14 +506,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     rgba(139, 92, 246, 0.05) 60%,
                     transparent 80%
                 ),
-                linear-gradient(
-                    45deg,
-                    transparent 0%,
-                    rgba(255, 255, 255, 0.1) 25%,
-                    rgba(255, 255, 255, 0.3) 50%,
-                    rgba(255, 255, 255, 0.1) 75%,
-                    transparent 100%
-                )
             `;
             
             // Effet de lumière dynamique derrière la carte
