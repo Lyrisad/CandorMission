@@ -15,6 +15,13 @@ document.addEventListener('DOMContentLoaded', function() {
             specialty: 'Transfert de connaissance',
             secretImage: 'images/heros/Secret/CC2.gif'
         },
+        'Mascotte.png': {
+            name: 'MASCOTTE CANDOR',
+            title: 'L\'Esprit de l\'Équipe',
+            description: "Symbole vivant de l'esprit d'équipe et de la cohésion qui unit tous les héros de Candor, la mascotte incarne les valeurs de progresser ensemble, respecter ses engagements, considérer chacun et aimer rendre service qui font la force de notre groupe. Elle rappelle à chacun que nous sommes plus forts ensemble, et que chaque membre contribue à l'excellence collective.",
+            experience: 'Symbole de l\'équipe',
+            specialty: 'Progresser ensemble, respecter ses engagements, considérer chacun et aimer rendre service'
+        },
         'Dorian.gif': {
             name: 'MARNE Dorian',
             title: 'GARDIEN DE LA SECURITE',
