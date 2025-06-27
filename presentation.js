@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
             title: 'Captain CAMPUS',
             description: 'Maître du transfert de connaissance télépathique, Captain Campus forme les esprits à la vitesse de la pensée. Responsable d\'un centre de formation dans la propreté, il transmet son savoir avec précision, rendant chaque agent plus rapide, plus compétent, plus conscient des enjeux d\'hygiène. Grâce à lui, l\'excellence professionnelle devient instantanée.',
             experience: 'Responsable de Campus',
-            specialty: 'Transfert de connaissance'
+            specialty: 'Transfert de connaissance',
+            secretImage: 'images/heros/Secret/CC2.gif'
         },
         'Dorian.gif': {
             name: 'MARNE Dorian',
@@ -318,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let isHovering = false;
         let mouseX = 0;
         let mouseY = 0;
+        let isSecretMode = false;
         
         // Effet de brillance holographique
         const createModalHolographicEffect = () => {
@@ -348,6 +350,74 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         const shine = createModalHolographicEffect();
+        
+        // Ajouter un indicateur de clic pour les cartes avec images secrètes
+        const gifSrc = modalCard.querySelector('.member-gif').src;
+        const gifName = gifSrc.split('/').pop();
+        const memberData = teamMembers[gifName];
+        
+        if (memberData && memberData.secretImage) {
+            // Ajouter un indicateur visuel que la carte est cliquable
+            const clickIndicator = document.createElement('div');
+            clickIndicator.className = 'click-indicator';
+            clickIndicator.innerHTML = '<i class="fas fa-eye"></i>';
+            clickIndicator.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                width: 40px;
+                height: 40px;
+                background: rgba(255, 255, 255, 0.9);
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                z-index: 20;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            `;
+            
+            clickIndicator.addEventListener('mouseenter', () => {
+                clickIndicator.style.transform = 'scale(1.1)';
+                clickIndicator.style.background = 'rgba(255, 255, 255, 1)';
+            });
+            
+            clickIndicator.addEventListener('mouseleave', () => {
+                clickIndicator.style.transform = 'scale(1)';
+                clickIndicator.style.background = 'rgba(255, 255, 255, 0.9)';
+            });
+            
+            modalCard.appendChild(clickIndicator);
+            
+            // Gestionnaire de clic pour basculer entre les images
+            modalCard.addEventListener('click', (e) => {
+                // Éviter de déclencher si on clique sur l'indicateur
+                if (e.target.closest('.click-indicator')) {
+                    return;
+                }
+                
+                const gifElement = modalCard.querySelector('.member-gif');
+                
+                if (isSecretMode) {
+                    // Retour à l'image originale
+                    gifElement.src = gifSrc;
+                    clickIndicator.innerHTML = '<i class="fas fa-eye"></i>';
+                    isSecretMode = false;
+                } else {
+                    // Passage à l'image secrète
+                    gifElement.src = memberData.secretImage;
+                    clickIndicator.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    isSecretMode = true;
+                }
+                
+                // Effet de transition
+                gifElement.style.opacity = '0';
+                setTimeout(() => {
+                    gifElement.style.opacity = '1';
+                }, 150);
+            });
+        }
         
         // Gestionnaire d'entrée de souris
         modalCard.addEventListener('mouseenter', (e) => {
