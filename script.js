@@ -283,9 +283,11 @@ window.addEventListener('load', () => {
     setTimeout(() => {
         document.body.style.opacity = '1';
         
-        // Déclencher l'animation d'entrée du background
+        // Déclencher l'animation d'entrée du background seulement sur la page d'accueil
         const heroBackground = document.querySelector('.hero-background');
-        if (heroBackground) {
+        const isPresentationPage = window.location.pathname.includes('presentation.html');
+        
+        if (heroBackground && !isPresentationPage) {
             setTimeout(() => {
                 heroBackground.style.opacity = '1';
                 // Ne pas modifier transform ici pour ne pas bloquer le parallax
