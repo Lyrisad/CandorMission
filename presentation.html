@@ -62,7 +62,21 @@
     <!-- Team Cards Section -->
     <section class="team-cards-section" id="equipe">
         <div class="container">
-            <h2 class="section-title">☄️Membres de l'Équipe</h2>
+            <h2 class="section-title">👑 Direction Héroïque</h2>
+            <div class="cards-grid direction-grid">
+                <div class="pokemon-card">
+                    <div class="card-content">
+                        <img src="images/heros/BOSS.gif" alt="Membre de l'équipe" class="member-gif">
+                    </div>
+                </div>
+                <div class="pokemon-card">
+                    <div class="card-content">
+                        <img src="images/heros/Emmanuelle.gif" alt="Membre de l'équipe" class="member-gif">
+                    </div>
+                </div>
+            </div>
+            
+            <h2 class="section-title" style="margin-top: 4rem;">☄️ Membres de l'Équipe</h2>
             <div class="cards-grid">
                 <div class="pokemon-card">
                     <div class="card-content">
@@ -78,57 +92,93 @@
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Angelique.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Nathalie.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Damien.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Jennifer.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Frank.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Elodie.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Gaelle.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                       <img src="images/heros/Laury.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Annabelle.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
                 <div class="pokemon-card">
                     <div class="card-content">
-                        <!-- Contenu de la carte à ajouter plus tard -->
+                        <img src="images/heros/Sophie.gif" alt="Membre de l'équipe" class="member-gif">
                     </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Modal/Overlay pour les détails des cartes -->
+    <div class="card-modal" id="cardModal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-container">
+            <div class="modal-card-section">
+                <div class="modal-card-wrapper">
+                    <div class="modal-card" id="modalCard">
+                        <!-- La carte sera clonée ici -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-details-section">
+                <div class="modal-close-btn" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="modal-content">
+                    <h2 class="modal-name" id="modalName">Nom du membre</h2>
+                    <p class="modal-title" id="modalTitle">Titre du poste</p>
+                    <div class="modal-description" id="modalDescription">
+                        <p>Description détaillée du membre...</p>
+                    </div>
+                    <div class="modal-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Mission</span>
+                            <span class="stat-value" id="modalExperience">5+ années</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pouvoirs</span>
+                            <span class="stat-value" id="modalSpecialty">Développement</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
