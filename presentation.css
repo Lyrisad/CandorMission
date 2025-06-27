@@ -258,7 +258,6 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 38px;
     transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
     filter: brightness(1) contrast(1);
 }
@@ -313,7 +312,8 @@ html {
     
     .pokemon-card {
         width: 250px;
-        height: 350px;
+        height: 395px;
+        border-radius: 30px;
     }
 }
 
@@ -468,7 +468,7 @@ html {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 41px;
+    border-radius: 0px;
     transition: all 0.3s ease;
 }
 
@@ -620,15 +620,21 @@ html {
     .modal-container {
         flex-direction: column;
         padding: 1rem;
+        align-items: center;
+        justify-content: flex-start;
+        overflow-y: auto;
     }
     
     .modal-card-section,
     .modal-details-section {
         max-width: 100%;
+        width: 100%;
+        margin-bottom: 0rem !important;
     }
     
     .modal-card-wrapper {
         transform: scale(0.6) translateY(-50px);
+        padding: 20px;
     }
     
     .card-modal.active .modal-card-wrapper {
@@ -647,5 +653,165 @@ html {
     .modal-stats {
         grid-template-columns: 1fr;
         gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .hero-background {
+        left: -55px !important;
+        background: url('images/presentationHero.png') top left !important;
+        width: 115% !important;
+    }
+
+    .modal-container {
+        padding: 0.5rem;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+    
+    .modal-card-section {
+        order: 1;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .modal-details-section {
+        order: 2;
+        transform: translateY(0);
+        padding: 1rem 0.5rem;
+        text-align: center;
+    }
+    
+    .modal-card-wrapper {
+        transform: scale(0.8) translateY(0);
+        padding: 10px;
+    }
+    
+    .card-modal.active .modal-card-wrapper {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-card {
+        width: 380px;
+        height: 480px;
+        align-items: flex-end;
+    }
+    
+    .modal-name {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-description {
+        font-size: 1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+    }
+    
+    .modal-stats {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+    }
+    
+    .stat-value {
+        font-size: 1.2rem;
+    }
+    
+    .modal-close-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        width: 40px;
+        height: 40px;
+        z-index: 1001;
+    }
+    
+    .modal-close-btn i {
+        font-size: 1.2rem;
+    }
+    
+    .click-indicator {
+        width: 35px;
+        height: 35px;
+        top: 15px;
+        right: 15px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-container {
+        padding: 0.25rem;
+        overflow-x: hidden;
+    }
+    
+    .modal-card-wrapper {
+        transform: scale(0.7) translateY(0);
+        padding: 5px;
+    }
+    
+    .card-modal.active .modal-card-wrapper {
+        transform: scale(1) translateY(0);
+    }
+    
+    .modal-card {
+        width: 340px;
+        height: 430px;
+    }
+    
+    .modal-details-section {
+        padding: 0.5rem;
+    }
+    
+    .modal-name {
+        font-size: 2.3rem;
+    }
+    
+    .modal-title {
+        font-size: 1rem;
+    }
+    
+    .modal-description {
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+    
+    .stat-item {
+        padding: 0.8rem;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .modal-close-btn {
+        top: 0.25rem;
+        right: 0.25rem;
+        width: 35px;
+        height: 35px;
+    }
+    
+    .click-indicator {
+        width: 30px;
+        height: 30px;
+        top: 10px;
+        right: 10px;
+        font-size: 0.9rem;
     }
 } 
