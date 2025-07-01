@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Candor Ma Mission</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="contact.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <div class="brand-logo">
+                        <img src="images/Logos/Boussole EAM.png" alt="Logo Boussole EAM" class="header-logo">
+                        <h1>Candor Ma Mission</h1>
+                    </div>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html#accueil" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="faq.html" class="nav-link">FAQ</a>
+                </li>
+                <li class="nav-item">
+                    <a href="presentation.html" class="nav-link">Présentation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link active">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">Admin</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="contact-hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Contactez-nous</h1>
+            <p class="hero-subtitle">Prêt à transformer votre vision en réalité ? Parlons-en !</p>
+            <a href="#contact-form" class="cta-button">Accéder au formulaire</a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>🚀 Notre Mission</h2>
+                    <p>Nous sommes là pour répondre à toutes vos questions et vous accompagner dans vos projets. Si vous ne trouvez pas la réponse que vous cherchez dans notre <a href="faq.html" style="color: #3b82f6; text-decoration: none; font-weight: 600;">FAQ</a>, n'hésitez pas à nous contacter directement. Notre équipe est prête à vous aider et à vous fournir toutes les informations dont vous avez besoin.</p>
+                    
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Téléphone <br><span class="phone-note">Demandez à parler à un réferent de mission</span></h3>
+                                <p>+33 2 32 63 43 10</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Email</h3>
+                                <p>candormamission@groupecandor.fr</p>
+                            </div>
+                        </div>
+                        
+                        <div class="contact-method">
+                            <div class="method-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="method-details">
+                                <h3>Adresse</h3>
+                                <p>9001 Av. des Métiers<br>27100 Val-de-Reuil, France</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="contact-form-container" id="contact-form">
+                    <form class="contact-form" id="contactForm">
+                        <h2>💬 Envoyez-nous un message</h2>
+                        
+                        <div class="form-group">
+                            <label for="name">Nom complet *</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="phone">Téléphone (optionnel)</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="message">Message / Question *</label>
+                            <textarea id="message" name="message" rows="6" required></textarea>
+                        </div>
+                        
+                        <div class="form-group checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="acceptance" name="acceptance" required>
+                                J'accepte la possibilité que ma question/demande soit exploitée de façon anonyme *
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Envoyer le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Candor Ma Mission</h3>
+                    <p>Transformez votre vision en réalité</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html#accueil">Accueil</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="presentation.html">Présentation</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Site crée par Daryl pour Candor Ma Mission. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Thank You Popup Modal -->
+    <div id="thankYouModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-card">
+                <div class="card-image">
+                    <img src="images/contactMerci.png" alt="Merci" class="card-img">
+                    <div class="holographic-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h2>🎉 Merci !</h2>
+                    <p class="hero-text">Vous venez de devenir un héros !</p>
+                    <p>Notre équipe vous répondra dans les plus brefs délais.</p>
+                    <button class="close-modal-btn">Fermer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="contact.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Initialize EmailJS with your public key
+            emailjs.init(EMAILJS_CONFIG.publicKey);
+        })();
+    </script>
+</body>
+</html> 

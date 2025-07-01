@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Candor Ma Mission</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <div class="brand-logo">
+                        <img src="images/Logos/Boussole EAM.png" alt="Logo Boussole EAM" class="header-logo">
+                        <h1>Candor Ma Mission</h1>
+                    </div>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html#accueil" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="faq.html" class="nav-link">FAQ</a>
+                </li>
+                <li class="nav-item">
+                    <a href="presentation.html" class="nav-link">Présentation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link active">Admin</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Admin Login Section -->
+    <section class="admin-section">
+        <div class="admin-background"></div>
+        <div class="container">
+            <div class="admin-content">
+                <!-- Login Form -->
+                <div class="login-container" id="loginForm">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <div class="admin-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <h1>🛡️ Panel Admin</h1>
+                            <p>Accédez au contrôle de la mission</p>
+                        </div>
+                        
+                        <form class="login-form" id="adminLoginForm">
+                            <div class="form-group">
+                                <label for="username">Nom d'utilisateur</label>
+                                <div class="input-group">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="username" name="username" required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="password">Mot de passe</label>
+                                <div class="input-group">
+                                    <i class="fas fa-lock"></i>
+                                    <input type="password" id="password" name="password" required>
+                                    <button type="button" class="toggle-password" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="remember" name="remember">
+                                    Se souvenir de moi
+                                </label>
+                            </div>
+                            
+                            <button type="submit" class="login-btn">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Se connecter
+                            </button>
+                        </form>
+                        
+                        <div class="login-footer">
+                            <p>Accès réservé aux administrateurs autorisés</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Dashboard (Hidden by default) -->
+                <div class="dashboard-container" id="dashboard" style="display: none;">
+                    <div class="dashboard-header">
+                        <h1>🎯 Dashboard Admin</h1>
+                        <button class="logout-btn" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Déconnexion
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-cards">
+                        <div class="admin-card">
+                            <div class="unread-badge" id="unreadBadge" style="display: none;">
+                                <span id="unreadCount">0</span> non lus
+                            </div>
+                            <div class="card-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>📬 Boîte de réception</h3>
+                                <p>Gérez les messages reçus via le formulaire de contact</p>
+                                <a href="inbox.html" class="card-btn">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Accéder
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="card-icon">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>❓ Gérer la FAQ</h3>
+                                <p>Ajoutez, modifiez ou supprimez des questions/réponses</p>
+                                <button class="card-btn">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Accéder
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>📊 Statistiques</h3>
+                                <p>Consultez les statistiques du site et des performances</p>
+                                <button class="card-btn">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Accéder
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logs Section -->
+                    <div class="logs-section">
+                        <div class="logs-header">
+                            <h2>📋 Logs d'activité</h2>
+                            <div class="logs-actions">
+                                <button class="refresh-logs-btn" id="refreshLogsBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Actualiser
+                                </button>
+                                <button class="export-logs-btn" id="exportLogsBtn">
+                                    <i class="fas fa-download"></i>
+                                    Exporter
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="logs-container">
+                            <div class="logs-loading" id="logsLoading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Chargement des logs...
+                            </div>
+                            
+                            <div class="logs-table-container" id="logsTableContainer">
+                                <table class="logs-table" id="logsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Date</th>
+                                            <th>Heure</th>
+                                            <th>Action</th>
+                                            <th>IP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="logsTableBody">
+                                        <!-- Logs will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="logs-empty" id="logsEmpty" style="display: none;">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>Aucun log disponible</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Candor Ma Mission</h3>
+                    <p>Transformez votre vision en réalité</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html#accueil">Accueil</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="presentation.html">Présentation</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Site crée par Daryl pour Candor Ma Mission. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html> 

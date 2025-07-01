@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boîte de réception - Admin Candor Ma Mission</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <link rel="stylesheet" href="inbox.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <div class="brand-logo">
+                        <img src="images/Logos/Boussole EAM.png" alt="Logo Boussole EAM" class="header-logo">
+                        <h1>Candor Ma Mission</h1>
+                    </div>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html#accueil" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="faq.html" class="nav-link">FAQ</a>
+                </li>
+                <li class="nav-item">
+                    <a href="presentation.html" class="nav-link">Présentation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">Admin</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Inbox Section -->
+    <section class="inbox-section">
+        <div class="inbox-background"></div>
+        <div class="container">
+            <div class="inbox-content">
+                <!-- Inbox Header -->
+                <div class="inbox-header">
+                    <div class="inbox-title">
+                        <h1>📬 Boîte de réception</h1>
+                        <div class="inbox-stats">
+                            <span class="unread-count" id="unreadCount">0</span> non lus
+                        </div>
+                    </div>
+                    <div class="inbox-actions">
+                        <button class="refresh-btn" id="refreshBtn">
+                            <i class="fas fa-sync-alt"></i>
+                            Actualiser
+                        </button>
+                        <a href="admin.html" class="back-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            Retour au panel
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading-container" id="loadingContainer">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Chargement des messages...</p>
+                    </div>
+                </div>
+
+                <!-- Messages Table -->
+                <div class="messages-container" id="messagesContainer" style="display: none;">
+                    <div class="table-container">
+                        <table class="messages-table">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <input type="checkbox" id="selectAll" class="select-checkbox">
+                                    </th>
+                                    <th>Statut</th>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="messagesTableBody">
+                                <!-- Messages will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Bulk Actions -->
+                    <div class="bulk-actions" id="bulkActions" style="display: none;">
+                        <span class="selected-count">0 messages sélectionnés</span>
+                        <div class="bulk-buttons">
+                            <button class="bulk-archive-btn" id="bulkArchiveBtn">
+                                <i class="fas fa-archive"></i>
+                                Archiver
+                            </button>
+                            <button class="bulk-delete-btn" id="bulkDeleteBtn">
+                                <i class="fas fa-trash"></i>
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <div class="empty-icon">
+                            <i class="fas fa-inbox"></i>
+                        </div>
+                        <h3>Aucun message</h3>
+                        <p>La boîte de réception est vide</p>
+                    </div>
+                </div>
+
+                <!-- Archives Section -->
+                <div class="archives-section">
+                    <div class="archives-header">
+                        <h2>📁 Vos archives</h2>
+                        <div class="archives-stats">
+                            <span class="archived-count" id="archivedCount">0</span> messages archivés
+                        </div>
+                    </div>
+
+                    <!-- Archives Loading State -->
+                    <div class="archives-loading" id="archivesLoadingContainer" style="display: none;">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Chargement des archives...</p>
+                        </div>
+                    </div>
+
+                    <!-- Archives Table -->
+                    <div class="archives-container" id="archivesContainer" style="display: none;">
+                        <div class="table-container">
+                            <table class="archives-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom</th>
+                                        <th>Email</th>
+                                        <th>Téléphone</th>
+                                        <th>Message</th>
+                                        <th>Date d'envoi</th>
+                                        <th>Date d'archivage</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archivesTableBody">
+                                    <!-- Archived messages will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Archives Empty State -->
+                        <div class="archives-empty-state" id="archivesEmptyState" style="display: none;">
+                            <div class="empty-icon">
+                                <i class="fas fa-archive"></i>
+                            </div>
+                            <h3>Aucune archive</h3>
+                            <p>Les messages archivés apparaîtront ici</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Detail Modal -->
+                <div id="messageModal" class="modal">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>📧 Détails du message</h2>
+                            <button class="close-btn" id="closeBtn">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body" id="modalBody">
+                            <!-- Message details will be loaded here -->
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-secondary" id="archiveBtn">
+                                <i class="fas fa-archive"></i>
+                                Archiver
+                            </button>
+                            <button class="btn btn-danger" id="deleteBtn">
+                                <i class="fas fa-trash"></i>
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Confirmation Modal -->
+                <div id="confirmModal" class="modal">
+                    <div class="modal-content confirm-modal">
+                        <div class="confirm-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="confirm-content">
+                            <h3 id="confirmTitle">Confirmation</h3>
+                            <p id="confirmMessage">Êtes-vous sûr de vouloir effectuer cette action ?</p>
+                        </div>
+                        <div class="confirm-actions">
+                            <button class="btn btn-secondary" id="confirmCancel">
+                                <i class="fas fa-times"></i>
+                                Annuler
+                            </button>
+                            <button class="btn btn-primary" id="confirmOk">
+                                <i class="fas fa-check"></i>
+                                Confirmer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Candor Ma Mission</h3>
+                    <p>Transformez votre vision en réalité</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html#accueil">Accueil</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="presentation.html">Présentation</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Site crée par Daryl pour Candor Ma Mission. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="inbox.js"></script>
+</body>
+</html> 

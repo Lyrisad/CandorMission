@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'BOSS.gif': {
             name: 'DAULL Jean Philippe',
             title: 'BIG BOSS',
-            description: 'PDG visionnaire du groupe Candor, Mister Candor règne en leader incontesté sur la planète de la propreté. Charismatique et déterminé, il inspire et fédère les forces du secteur avec une autorité naturelle. Son pouvoir : guider ses équipes vers l\'excellence, unir les talents et faire briller les valeurs de Candor partout où l\'hygiène est en jeu.',
+            description: 'PDG visionnaire du groupe Candor, BIG BOSS règne en leader incontesté sur la planète de la propreté. Charismatique et déterminé, il inspire et fédère les forces du secteur avec une autorité naturelle. Son pouvoir : guider ses équipes vers l\'excellence, unir les talents et faire briller les valeurs de Candor partout où l\'hygiène est en jeu.',
             experience: 'PDG du groupe CANDOR',
             specialty: 'Possède tous les pouvoirs de la planète CANDOR'
         },
