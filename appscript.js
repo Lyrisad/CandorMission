@@ -55,7 +55,7 @@ function doGet(e) {
         sheet.appendRow([uniqueId, name, email, phone, message, false, currentDate]);
         
         // Ajouter un log automatique
-        addAutomaticLog("Nouveau message reçu", "Contact Form");
+        addAutomaticLog("Nouveau message reçu (ID: " + uniqueId + ")", "Contact Form");
         
         result.success = true;
         result.id = uniqueId;
@@ -113,9 +113,10 @@ function doGet(e) {
         }
       }
       
-      // Ajouter un log automatique
+      // Ajouter un log automatique avec l'IP du client
       if (found) {
-        addAutomaticLog("Message supprimé", "Admin Panel");
+        var clientIP = e.parameter.clientIP || "Admin Panel";
+        addAutomaticLog("Message supprimé (ID: " + messageId + ")", clientIP);
       }
       
       result.success = found;
@@ -162,9 +163,10 @@ function doGet(e) {
           }
         }
         
-        // Ajouter un log automatique
+        // Ajouter un log automatique avec l'IP du client
         if (found) {
-          addAutomaticLog("Message archivé", "Admin Panel");
+          var clientIP = e.parameter.clientIP || "Admin Panel";
+          addAutomaticLog("Message archivé (ID: " + messageId + ")", clientIP);
         }
         
         result.success = found;
@@ -333,9 +335,10 @@ function doGet(e) {
           }
         }
         
-        // Ajouter un log automatique
+        // Ajouter un log automatique avec l'IP du client
         if (found) {
-          addAutomaticLog("Message restauré", "Admin Panel");
+          var clientIP = e.parameter.clientIP || "Admin Panel";
+          addAutomaticLog("Message restauré (ID: " + messageId + ")", clientIP);
         }
         
         result.success = found;
@@ -362,9 +365,10 @@ function doGet(e) {
           }
         }
         
-        // Ajouter un log automatique
+        // Ajouter un log automatique avec l'IP du client
         if (found) {
-          addAutomaticLog("Message supprimé définitivement", "Admin Panel");
+          var clientIP = e.parameter.clientIP || "Admin Panel";
+          addAutomaticLog("Message supprimé définitivement (ID: " + messageId + ")", clientIP);
         }
         
         result.success = found;
@@ -395,15 +399,15 @@ function doGet(e) {
     } else if (action == "addLog") {
       // Ajout d'un nouveau log
       var logsSheet = ss.getSheetByName("LOGS");
-      var action = e.parameter.action;
+      var logMessage = e.parameter.logMessage;
       var ip = e.parameter.ip || "N/A";
       
       if (!logsSheet) {
         result.success = false;
         result.error = "Feuille 'LOGS' non trouvée";
-      } else if (!action) {
+      } else if (!logMessage) {
         result.success = false;
-        result.error = "Action manquante";
+        result.error = "Message de log manquant";
       } else {
         // Générer un ID unique
         var data = logsSheet.getDataRange().getValues();
@@ -418,27 +422,40 @@ function doGet(e) {
         var year = now.getFullYear();
         var date = day + '/' + month + '/' + year;
         
-        // Formatage manuel de l'heure (HH:MM:SS)
+        // Formatage manuel de l'heure (HHhMMmSSs) pour éviter la transformation automatique de Google Sheets
         var hours = String(now.getHours()).padStart(2, '0');
         var minutes = String(now.getMinutes()).padStart(2, '0');
         var seconds = String(now.getSeconds()).padStart(2, '0');
-        var heure = hours + ':' + minutes + ':' + seconds;
+        var heure = hours + 'h' + minutes + 'm' + seconds + 's';
         
         // Rendre l'action plus descriptive
-        var descriptiveAction = action;
-        if (action === 'addLog') {
-          descriptiveAction = 'Test de log';
-        } else if (action.includes('archiv')) {
-          descriptiveAction = 'Message archivé';
-        } else if (action.includes('supprim')) {
-          descriptiveAction = 'Message supprimé';
-        } else if (action.includes('restaur')) {
-          descriptiveAction = 'Message restauré';
-        } else if (action.includes('connexion')) {
+        var descriptiveAction = logMessage;
+        
+        // Debug: Log the received message
+        console.log('Message de log reçu:', logMessage);
+        
+        if (logMessage === 'Connexion admin') {
+          descriptiveAction = 'Connexion utilisateur';
+        } else if (logMessage === 'Déconnexion admin') {
+          descriptiveAction = 'Déconnexion utilisateur';
+        } else if (logMessage === 'addLog') {
+          descriptiveAction = 'Connexion manuelle';
+        } else if (logMessage && logMessage.includes('archiv')) {
+          descriptiveAction = logMessage; // Keep as is, now includes ID
+        } else if (logMessage && logMessage.includes('supprim')) {
+          descriptiveAction = logMessage; // Keep as is, now includes ID
+        } else if (logMessage && logMessage.includes('restaur')) {
+          descriptiveAction = logMessage; // Keep as is, now includes ID
+        } else if (logMessage && logMessage.includes('connexion')) {
           descriptiveAction = 'Connexion admin';
-        } else if (action.includes('déconnexion')) {
+        } else if (logMessage && logMessage.includes('déconnexion')) {
           descriptiveAction = 'Déconnexion admin';
+        } else {
+          // Fallback: keep the original message
+          descriptiveAction = logMessage;
         }
+        
+        console.log('Message transformé:', descriptiveAction);
         
         // Ajouter le nouveau log
         logsSheet.appendRow([newId, date, heure, descriptiveAction, ip]);
@@ -473,6 +490,256 @@ function doGet(e) {
         result.success = true;
         result.csv = csvContent;
         result.filename = "logs_" + new Date().toISOString().split('T')[0] + ".csv";
+      }
+      
+    } else if (action == "readCategories") {
+      // Lecture de toutes les catégories
+      var categoriesSheet = ss.getSheetByName("CATEGORIES");
+      if (!categoriesSheet) {
+        result.success = false;
+        result.error = "Feuille 'CATEGORIES' non trouvée";
+      } else {
+        var data = categoriesSheet.getDataRange().getValues();
+        // La première ligne est l'en-tête
+        result.values = data.slice(1).map(function (row) {
+          return {
+            id: row[0],
+            nom: row[1],
+            description: row[2],
+            cree_le: row[3],
+            modifie_le: row[4],
+            visible: row[5],
+            emoji: row[6] || '❓'
+          };
+        });
+        result.success = true;
+      }
+      
+    } else if (action == "addCategory") {
+      // Ajouter une nouvelle catégorie
+      var categoriesSheet = ss.getSheetByName("CATEGORIES");
+      var nom = e.parameter.nom;
+      var description = e.parameter.description || "";
+      var emoji = e.parameter.emoji || "❓";
+      var visible = e.parameter.visible === 'true';
+      
+      if (!categoriesSheet) {
+        result.success = false;
+        result.error = "Feuille 'CATEGORIES' non trouvée";
+      } else if (!nom) {
+        result.success = false;
+        result.error = "Le nom de la catégorie est requis";
+      } else {
+        // Générer un ID unique
+        var data = categoriesSheet.getDataRange().getValues();
+        var newId = 1;
+        if (data.length > 1) {
+          var ids = data.slice(1).map(function (row) {
+            return parseInt(row[0].toString().replace('CAT_', '')) || 0;
+          });
+          newId = Math.max.apply(null, ids) + 1;
+        }
+        
+        var uniqueId = "CAT_" + newId;
+        var currentDate = new Date();
+        
+        // Ajouter la nouvelle ligne avec emoji à la fin
+        categoriesSheet.appendRow([uniqueId, nom, description, currentDate, null, visible, emoji]);
+        
+        result.success = true;
+        result.id = uniqueId;
+        result.message = "Catégorie créée avec succès";
+      }
+      
+    } else if (action == "updateCategory") {
+      // Mettre à jour une catégorie
+      var categoriesSheet = ss.getSheetByName("CATEGORIES");
+      var categoryId = e.parameter.id;
+      var nom = e.parameter.nom;
+      var description = e.parameter.description;
+      var emoji = e.parameter.emoji;
+      var visible = e.parameter.visible;
+      
+      if (!categoriesSheet) {
+        result.success = false;
+        result.error = "Feuille 'CATEGORIES' non trouvée";
+      } else if (!categoryId) {
+        result.success = false;
+        result.error = "ID de catégorie manquant";
+      } else {
+        var data = categoriesSheet.getDataRange().getValues();
+        var found = false;
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === categoryId) {
+            var currentDate = new Date();
+            
+            // Mettre à jour seulement les champs fournis
+            if (nom !== undefined) categoriesSheet.getRange(i + 1, 2).setValue(nom);
+            if (description !== undefined) categoriesSheet.getRange(i + 1, 3).setValue(description);
+            categoriesSheet.getRange(i + 1, 5).setValue(currentDate); // MODIFIE_LE
+            if (visible !== undefined) categoriesSheet.getRange(i + 1, 6).setValue(visible === 'true');
+            if (emoji !== undefined) categoriesSheet.getRange(i + 1, 7).setValue(emoji);
+            
+            found = true;
+            break;
+          }
+        }
+        
+        result.success = found;
+        if (!found) result.error = "Catégorie non trouvée";
+      }
+      
+    } else if (action == "deleteCategory") {
+      // Supprimer une catégorie
+      var categoriesSheet = ss.getSheetByName("CATEGORIES");
+      var categoryId = e.parameter.id;
+      
+      if (!categoriesSheet) {
+        result.success = false;
+        result.error = "Feuille 'CATEGORIES' non trouvée";
+      } else if (!categoryId) {
+        result.success = false;
+        result.error = "ID de catégorie manquant";
+      } else {
+        var data = categoriesSheet.getDataRange().getValues();
+        var found = false;
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === categoryId) {
+            categoriesSheet.deleteRow(i + 1);
+            found = true;
+            break;
+          }
+        }
+        
+        result.success = found;
+        if (!found) result.error = "Catégorie non trouvée";
+      }
+      
+    } else if (action == "readFAQs") {
+      // Lecture de toutes les FAQ
+      var faqSheet = ss.getSheetByName("FAQ");
+      if (!faqSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ' non trouvée";
+      } else {
+        var data = faqSheet.getDataRange().getValues();
+        // La première ligne est l'en-tête
+        result.values = data.slice(1).map(function (row) {
+          return {
+            id: row[0],
+            question: row[1],
+            reponse: row[2],
+            categorie: row[3],
+            cree_le: row[4],
+            modifie_le: row[5],
+            visible: row[6]
+          };
+        });
+        result.success = true;
+      }
+      
+    } else if (action == "addFAQ") {
+      // Ajouter une nouvelle FAQ
+      var faqSheet = ss.getSheetByName("FAQ");
+      var question = e.parameter.question;
+      var reponse = e.parameter.reponse;
+      var categorie = e.parameter.categorie;
+      var visible = e.parameter.visible === 'true';
+      
+      if (!faqSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ' non trouvée";
+      } else if (!question || !reponse || !categorie) {
+        result.success = false;
+        result.error = "Question, réponse et catégorie sont requis";
+      } else {
+        // Générer un ID unique
+        var data = faqSheet.getDataRange().getValues();
+        var newId = 1;
+        if (data.length > 1) {
+          var ids = data.slice(1).map(function (row) {
+            return parseInt(row[0].toString().replace('FAQ_', '')) || 0;
+          });
+          newId = Math.max.apply(null, ids) + 1;
+        }
+        
+        var uniqueId = "FAQ_" + newId;
+        var currentDate = new Date();
+        
+        // Ajouter la nouvelle ligne
+        faqSheet.appendRow([uniqueId, question, reponse, categorie, currentDate, null, visible]);
+        
+        result.success = true;
+        result.id = uniqueId;
+        result.message = "FAQ créée avec succès";
+      }
+      
+    } else if (action == "updateFAQ") {
+      // Mettre à jour une FAQ
+      var faqSheet = ss.getSheetByName("FAQ");
+      var faqId = e.parameter.id;
+      var question = e.parameter.question;
+      var reponse = e.parameter.reponse;
+      var categorie = e.parameter.categorie;
+      var visible = e.parameter.visible;
+      
+      if (!faqSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ' non trouvée";
+      } else if (!faqId) {
+        result.success = false;
+        result.error = "ID de FAQ manquant";
+      } else {
+        var data = faqSheet.getDataRange().getValues();
+        var found = false;
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === faqId) {
+            var currentDate = new Date();
+            
+            // Mettre à jour seulement les champs fournis
+            if (question !== undefined) faqSheet.getRange(i + 1, 2).setValue(question);
+            if (reponse !== undefined) faqSheet.getRange(i + 1, 3).setValue(reponse);
+            if (categorie !== undefined) faqSheet.getRange(i + 1, 4).setValue(categorie);
+            faqSheet.getRange(i + 1, 6).setValue(currentDate); // MODIFIE_LE
+            if (visible !== undefined) faqSheet.getRange(i + 1, 7).setValue(visible === 'true');
+            
+            found = true;
+            break;
+          }
+        }
+        
+        result.success = found;
+        if (!found) result.error = "FAQ non trouvée";
+      }
+      
+    } else if (action == "deleteFAQ") {
+      // Supprimer une FAQ
+      var faqSheet = ss.getSheetByName("FAQ");
+      var faqId = e.parameter.id;
+      
+      if (!faqSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ' non trouvée";
+      } else if (!faqId) {
+        result.success = false;
+        result.error = "ID de FAQ manquant";
+      } else {
+        var data = faqSheet.getDataRange().getValues();
+        var found = false;
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === faqId) {
+            faqSheet.deleteRow(i + 1);
+            found = true;
+            break;
+          }
+        }
+        
+        result.success = found;
+        if (!found) result.error = "FAQ non trouvée";
       }
       
     } else {
@@ -543,7 +810,7 @@ function addAutomaticLog(action, source) {
       var hours = String(now.getHours()).padStart(2, '0');
       var minutes = String(now.getMinutes()).padStart(2, '0');
       var seconds = String(now.getSeconds()).padStart(2, '0');
-      var heure = hours + ':' + minutes + ':' + seconds;
+      var heure = hours + 'h' + minutes + 'm' + seconds + 's';
       
       var logData = logsSheet.getDataRange().getValues();
       var logId = logData.length;

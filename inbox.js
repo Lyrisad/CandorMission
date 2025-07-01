@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
                 <td>
                     <span class="status-badge ${message.read ? 'status-read' : 'status-unread'}">
-                        ${message.read ? 'Lu' : 'Inconsulté'}
+                        ${message.read ? 'Lu' : 'Non lu'}
                     </span>
                 </td>
                 <td>${escapeHtml(message.name)}</td>
@@ -484,6 +484,36 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmCallback = null;
     }
     
+    // Helper function to make requests with client IP
+    function makeRequestWithIP(url, callback) {
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(ipData => {
+                const clientIP = ipData.ip || 'N/A';
+                const separator = url.includes('?') ? '&' : '?';
+                const urlWithIP = url + separator + 'clientIP=' + encodeURIComponent(clientIP);
+                
+                fetch(urlWithIP)
+                    .then(response => response.json())
+                    .then(callback)
+                    .catch(error => {
+                        console.error('Error in request:', error);
+                        callback({ success: false, error: 'Erreur de connexion' });
+                    });
+            })
+            .catch(error => {
+                // Fallback without IP if IP service fails
+                console.log('Could not get IP, proceeding without it');
+                fetch(url)
+                    .then(response => response.json())
+                    .then(callback)
+                    .catch(error => {
+                        console.error('Error in fallback request:', error);
+                        callback({ success: false, error: 'Erreur de connexion' });
+                    });
+            });
+    }
+    
     // Add log entry
     function addLog(action) {
         // Get user IP address
@@ -504,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Send log to server
     function sendLog(action, ip) {
-        const url = `${GOOGLE_SCRIPT_URL}?action=addLog&action=${encodeURIComponent(action)}&ip=${encodeURIComponent(ip)}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=addLog&logMessage=${encodeURIComponent(action)}&ip=${encodeURIComponent(ip)}`;
         
         return fetch(url)
             .then(response => response.json())
@@ -531,24 +561,18 @@ document.addEventListener('DOMContentLoaded', function() {
             () => {
                 const url = `${GOOGLE_SCRIPT_URL}?action=archiveMessage&id=${encodeURIComponent(messageId)}`;
                 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Add log first, then show success
-                            addLog('Message archivé').then(() => {
-                                setTimeout(() => {
-                                    showSuccess('Message archivé avec succès');
-                                }, 200);
-                            });
-                        } else {
-                            showError('Erreur lors de l\'archivage: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error archiving message:', error);
-                        showError('Erreur de connexion');
-                    });
+                makeRequestWithIP(url, (data) => {
+                    if (data.success) {
+                        // Add log first, then show success
+                        addLog(`Message archivé (ID: ${messageId})`).then(() => {
+                            setTimeout(() => {
+                                showSuccess('Message archivé avec succès');
+                            }, 200);
+                        });
+                    } else {
+                        showError('Erreur lors de l\'archivage: ' + data.error);
+                    }
+                });
             }
         );
     }
@@ -561,24 +585,18 @@ document.addEventListener('DOMContentLoaded', function() {
             () => {
                 const url = `${GOOGLE_SCRIPT_URL}?action=deleteMessage&id=${encodeURIComponent(messageId)}`;
                 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Add log first, then show success
-                            addLog('Message supprimé').then(() => {
-                                setTimeout(() => {
-                                    showSuccess('Message supprimé avec succès');
-                                }, 200);
-                            });
-                        } else {
-                            showError('Erreur lors de la suppression: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting message:', error);
-                        showError('Erreur de connexion');
-                    });
+                makeRequestWithIP(url, (data) => {
+                    if (data.success) {
+                        // Add log first, then show success
+                        addLog(`Message supprimé (ID: ${messageId})`).then(() => {
+                            setTimeout(() => {
+                                showSuccess('Message supprimé avec succès');
+                            }, 200);
+                        });
+                    } else {
+                        showError('Erreur lors de la suppression: ' + data.error);
+                    }
+                });
             }
         );
     }
@@ -640,12 +658,29 @@ document.addEventListener('DOMContentLoaded', function() {
             '🗄️ Archiver en masse',
             `Êtes-vous sûr de vouloir archiver ${selectedMessages.size} message${selectedMessages.size > 1 ? 's' : ''} ?`,
             () => {
-                const promises = Array.from(selectedMessages).map(messageId => {
-                    const url = `${GOOGLE_SCRIPT_URL}?action=archiveMessage&id=${encodeURIComponent(messageId)}`;
-                    return fetch(url).then(response => response.json());
-                });
-                
-                Promise.all(promises)
+                // Get IP once for all bulk operations
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(ipData => {
+                        const clientIP = ipData.ip || 'N/A';
+                        
+                        const promises = Array.from(selectedMessages).map(messageId => {
+                            const url = `${GOOGLE_SCRIPT_URL}?action=archiveMessage&id=${encodeURIComponent(messageId)}&clientIP=${encodeURIComponent(clientIP)}`;
+                            return fetch(url).then(response => response.json());
+                        });
+                        
+                        return Promise.all(promises);
+                    })
+                    .catch(error => {
+                        // Fallback without IP
+                        console.log('Could not get IP for bulk archive, proceeding without it');
+                        const promises = Array.from(selectedMessages).map(messageId => {
+                            const url = `${GOOGLE_SCRIPT_URL}?action=archiveMessage&id=${encodeURIComponent(messageId)}`;
+                            return fetch(url).then(response => response.json());
+                        });
+                        
+                        return Promise.all(promises);
+                    })
                     .then(results => {
                         const successCount = results.filter(result => result.success).length;
                         selectedMessages.clear();
@@ -670,12 +705,29 @@ document.addEventListener('DOMContentLoaded', function() {
             '🗑️ Supprimer en masse',
             `Êtes-vous sûr de vouloir supprimer ${selectedMessages.size} message${selectedMessages.size > 1 ? 's' : ''} ? Cette action est irréversible.`,
             () => {
-                const promises = Array.from(selectedMessages).map(messageId => {
-                    const url = `${GOOGLE_SCRIPT_URL}?action=deleteMessage&id=${encodeURIComponent(messageId)}`;
-                    return fetch(url).then(response => response.json());
-                });
-                
-                Promise.all(promises)
+                // Get IP once for all bulk operations
+                fetch('https://api.ipify.org?format=json')
+                    .then(response => response.json())
+                    .then(ipData => {
+                        const clientIP = ipData.ip || 'N/A';
+                        
+                        const promises = Array.from(selectedMessages).map(messageId => {
+                            const url = `${GOOGLE_SCRIPT_URL}?action=deleteMessage&id=${encodeURIComponent(messageId)}&clientIP=${encodeURIComponent(clientIP)}`;
+                            return fetch(url).then(response => response.json());
+                        });
+                        
+                        return Promise.all(promises);
+                    })
+                    .catch(error => {
+                        // Fallback without IP
+                        console.log('Could not get IP for bulk delete, proceeding without it');
+                        const promises = Array.from(selectedMessages).map(messageId => {
+                            const url = `${GOOGLE_SCRIPT_URL}?action=deleteMessage&id=${encodeURIComponent(messageId)}`;
+                            return fetch(url).then(response => response.json());
+                        });
+                        
+                        return Promise.all(promises);
+                    })
                     .then(results => {
                         const successCount = results.filter(result => result.success).length;
                         selectedMessages.clear();
@@ -807,28 +859,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 const url = `${GOOGLE_SCRIPT_URL}?action=restoreMessage&id=${encodeURIComponent(messageId)}`;
                 console.log('Restore URL:', url);
                 
-                fetch(url)
-                    .then(response => {
-                        console.log('Restore response status:', response.status);
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log('Restore response data:', data);
-                        if (data.success) {
-                            // Add log first, then show success
-                            addLog('Message restauré').then(() => {
-                                setTimeout(() => {
-                                    showSuccess('Message restauré avec succès');
-                                }, 200);
-                            });
-                        } else {
-                            showError('Erreur lors de la restauration: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error restoring message:', error);
-                        showError('Erreur de connexion');
-                    });
+                makeRequestWithIP(url, (data) => {
+                    console.log('Restore response data:', data);
+                    if (data.success) {
+                        // Add log first, then show success
+                        addLog(`Message restauré (ID: ${messageId})`).then(() => {
+                            setTimeout(() => {
+                                showSuccess('Message restauré avec succès');
+                            }, 200);
+                        });
+                    } else {
+                        showError('Erreur lors de la restauration: ' + data.error);
+                    }
+                });
             }
         );
     }
@@ -841,24 +884,18 @@ document.addEventListener('DOMContentLoaded', function() {
             () => {
                 const url = `${GOOGLE_SCRIPT_URL}?action=deleteArchivedMessage&id=${encodeURIComponent(messageId)}`;
                 
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Add log first, then show success
-                            addLog('Message supprimé définitivement').then(() => {
-                                setTimeout(() => {
-                                    showSuccess('Message supprimé définitivement');
-                                }, 200);
-                            });
-                        } else {
-                            showError('Erreur lors de la suppression: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error deleting archived message:', error);
-                        showError('Erreur de connexion');
-                    });
+                makeRequestWithIP(url, (data) => {
+                    if (data.success) {
+                        // Add log first, then show success
+                        addLog(`Message supprimé définitivement (ID: ${messageId})`).then(() => {
+                            setTimeout(() => {
+                                showSuccess('Message supprimé définitivement');
+                            }, 200);
+                        });
+                    } else {
+                        showError('Erreur lors de la suppression: ' + data.error);
+                    }
+                });
             }
         );
     }

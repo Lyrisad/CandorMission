@@ -136,7 +136,7 @@
                             <div class="card-content">
                                 <h3>❓ Gérer la FAQ</h3>
                                 <p>Ajoutez, modifiez ou supprimez des questions/réponses</p>
-                                <button class="card-btn">
+                                <button class="card-btn" id="manageFaqBtn">
                                     <i class="fas fa-arrow-right"></i>
                                     Accéder
                                 </button>
@@ -174,27 +174,43 @@
                             </div>
                         </div>
                         
+                        <!-- Search Bar -->
+                        <div class="logs-search">
+                            <div class="search-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="logsSearchInput" placeholder="Rechercher dans les logs (action, IP, date...)">
+                                <button class="clear-search-btn" id="clearSearchBtn" style="display: none;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="search-results" id="searchResults" style="display: none;">
+                                <span id="searchResultsText">0 résultat trouvé</span>
+                            </div>
+                        </div>
+                        
                         <div class="logs-container">
                             <div class="logs-loading" id="logsLoading" style="display: none;">
                                 <i class="fas fa-spinner fa-spin"></i>
                                 Chargement des logs...
                             </div>
                             
-                            <div class="logs-table-container" id="logsTableContainer">
-                                <table class="logs-table" id="logsTable">
-                                    <thead>
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Date</th>
-                                            <th>Heure</th>
-                                            <th>Action</th>
-                                            <th>IP</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="logsTableBody">
-                                        <!-- Logs will be loaded here -->
-                                    </tbody>
-                                </table>
+                            <div class="logs-table-wrapper">
+                                <div class="logs-table-container" id="logsTableContainer">
+                                    <table class="logs-table" id="logsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Date</th>
+                                                <th>Heure</th>
+                                                <th>Action</th>
+                                                <th>IP</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="logsTableBody">
+                                            <!-- Logs will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             
                             <div class="logs-empty" id="logsEmpty" style="display: none;">
@@ -203,6 +219,242 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- FAQ Management Section -->
+                    <div class="faq-management-section" id="faqManagementSection" style="display: none;">
+                        <div class="faq-management-header">
+                            <h2>❓ Gestion de la FAQ</h2>
+                            <div class="faq-management-actions">
+                                <button class="refresh-faq-btn" id="refreshFaqBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Actualiser
+                                </button>
+                                <button class="back-to-dashboard-btn" id="backToDashboardBtn">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Retour au Panel
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- FAQ Management Tabs -->
+                        <div class="faq-tabs">
+                            <button class="faq-tab-btn active" data-tab="categories">
+                                <i class="fas fa-folder"></i>
+                                Catégories
+                            </button>
+                            <button class="faq-tab-btn" data-tab="questions">
+                                <i class="fas fa-question-circle"></i>
+                                Questions/Réponses
+                            </button>
+                        </div>
+
+                        <!-- Categories Tab -->
+                        <div class="faq-tab-content" id="categoriesTab">
+                            <div class="categories-management">
+                                <div class="categories-header">
+                                    <h3>📋 Gestion des Catégories</h3>
+                                    <button class="add-category-btn" id="addCategoryBtn">
+                                        <i class="fas fa-plus"></i>
+                                        Nouvelle Catégorie
+                                    </button>
+                                </div>
+
+                                <!-- Categories Search -->
+                                <div class="categories-search">
+                                    <div class="search-container">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" id="categoriesSearchInput" placeholder="Rechercher une catégorie (nom, description...)">
+                                        <button class="clear-search-btn" id="clearCategoriesSearchBtn" style="display: none;">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="search-results" id="categoriesSearchResults" style="display: none;">
+                                        <span id="categoriesSearchResultsText">0 résultat trouvé</span>
+                                    </div>
+                                </div>
+
+                                <div class="categories-loading" id="categoriesLoading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Chargement des catégories...
+                                </div>
+
+                                <div class="categories-list" id="categoriesList">
+                                    <!-- Categories will be loaded here -->
+                                </div>
+
+                                <div class="categories-empty" id="categoriesEmpty" style="display: none;">
+                                    <i class="fas fa-folder-open"></i>
+                                    <p>Aucune catégorie créée</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Questions Tab -->
+                        <div class="faq-tab-content" id="questionsTab" style="display: none;">
+                            <div class="questions-management">
+                                <div class="questions-header">
+                                    <h3>❓ Gestion des Questions/Réponses</h3>
+                                    <button class="add-question-btn" id="addQuestionBtn">
+                                        <i class="fas fa-plus"></i>
+                                        Nouvelle Question
+                                    </button>
+                                </div>
+
+                                <div class="questions-controls">
+                                    <div class="questions-filter">
+                                        <select id="questionCategoryFilter" class="category-filter-select">
+                                            <option value="all">Toutes les catégories</option>
+                                            <!-- Categories will be loaded here -->
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- Questions Search -->
+                                    <div class="questions-search">
+                                        <div class="search-container">
+                                            <i class="fas fa-search search-icon"></i>
+                                            <input type="text" id="questionsSearchInput" placeholder="Rechercher une question (question, réponse...)">
+                                            <button class="clear-search-btn" id="clearQuestionsSearchBtn" style="display: none;">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <div class="search-results" id="questionsSearchResults" style="display: none;">
+                                            <span id="questionsSearchResultsText">0 résultat trouvé</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="questions-loading" id="questionsLoading" style="display: none;">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    Chargement des questions...
+                                </div>
+
+                                <div class="questions-list" id="questionsList">
+                                    <!-- Questions will be loaded here -->
+                                </div>
+
+                                <div class="questions-empty" id="questionsEmpty" style="display: none;">
+                                    <i class="fas fa-question-circle"></i>
+                                    <p>Aucune question créée</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Modal -->
+        <div id="categoryModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="categoryModalTitle">📁 Nouvelle Catégorie</h2>
+                    <button class="close-btn" id="closeCategoryModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="categoryForm">
+                        <div class="form-group">
+                            <label for="categoryName">Nom de la catégorie *</label>
+                            <input type="text" id="categoryName" name="categoryName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryDescription">Description</label>
+                            <textarea id="categoryDescription" name="categoryDescription" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="categoryEmoji">Emoji de la catégorie *</label>
+                            <div class="emoji-selector">
+                                <div class="emoji-display" id="emojiDisplay">
+                                    <span class="selected-emoji" id="selectedEmoji">❓</span>
+                                    <span class="emoji-placeholder">Cliquez pour choisir un emoji</span>
+                                </div>
+                                <input type="hidden" id="categoryEmoji" name="categoryEmoji" value="❓" required>
+                                <div class="emoji-picker" id="emojiPicker" style="display: none;">
+                                    <div class="emoji-picker-header">
+                                        <input type="text" class="emoji-search" id="emojiSearch" placeholder="Rechercher un emoji...">
+                                    </div>
+                                    <div class="emoji-categories">
+                                        <button type="button" class="emoji-cat-btn active" data-category="smileys">😀</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="people">👥</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="nature">🌿</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="food">🍎</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="activities">⚽</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="travel">🚗</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="objects">💎</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="symbols">❤️</button>
+                                        <button type="button" class="emoji-cat-btn" data-category="flags">🏳️</button>
+                                    </div>
+                                    <div class="emoji-grid" id="emojiGrid">
+                                        <!-- Emojis will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="categoryVisible" name="categoryVisible" checked>
+                                Visible sur le site
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelCategoryBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-primary" id="saveCategoryBtn">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Modal -->
+        <div id="questionModal" class="modal">
+            <div class="modal-content question-modal-content">
+                <div class="modal-header">
+                    <h2 id="questionModalTitle">❓ Nouvelle Question</h2>
+                    <button class="close-btn" id="closeQuestionModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="questionForm">
+                        <div class="form-group">
+                            <label for="questionCategory">Catégorie *</label>
+                            <select id="questionCategory" name="questionCategory" required>
+                                <option value="">Sélectionnez une catégorie</option>
+                                <!-- Categories will be loaded here -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionText">Question *</label>
+                            <textarea id="questionText" name="questionText" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionAnswer">Réponse *</label>
+                            <textarea id="questionAnswer" name="questionAnswer" rows="6" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="questionVisible" name="questionVisible" checked>
+                                Visible sur le site
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelQuestionBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-primary" id="saveQuestionBtn">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
                 </div>
             </div>
         </div>

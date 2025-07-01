@@ -91,7 +91,7 @@ body {
     align-items: center;
 }
 
-.refresh-btn, .back-btn {
+.refresh-btn{
     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
     color: white;
     border: none;
@@ -108,7 +108,31 @@ body {
     box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
 }
 
-.refresh-btn:hover, .back-btn:hover {
+
+.back-btn {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.2);
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+    background: linear-gradient(135deg, #4b5563, #374151);
+}
+
+.refresh-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
     background: linear-gradient(135deg, #2563eb, #7c3aed);
@@ -163,8 +187,10 @@ body {
 
 .messages-table {
     width: 100%;
+    min-width: 1200px;
     border-collapse: collapse;
     font-size: 0.95rem;
+    table-layout: fixed;
 }
 
 .messages-table th {
@@ -179,10 +205,38 @@ body {
     z-index: 10;
 }
 
+/* Define specific column widths */
+.messages-table th:nth-child(1) { width: 50px; }   /* Checkbox */
+.messages-table th:nth-child(2) { width: 100px; }  /* Status */
+.messages-table th:nth-child(3) { width: 150px; }  /* Nom */
+.messages-table th:nth-child(4) { width: 200px; }  /* Email */
+.messages-table th:nth-child(5) { width: 120px; }  /* Téléphone */
+.messages-table th:nth-child(6) { width: 300px; }  /* Message */
+.messages-table th:nth-child(7) { width: 140px; }  /* Date */
+.messages-table th:nth-child(8) { width: 140px; }  /* Actions */
+
+.messages-table td:nth-child(1) { width: 50px; }   /* Checkbox */
+.messages-table td:nth-child(2) { width: 100px; }  /* Status */
+.messages-table td:nth-child(3) { width: 150px; }  /* Nom */
+.messages-table td:nth-child(4) { width: 200px; }  /* Email */
+.messages-table td:nth-child(5) { width: 120px; }  /* Téléphone */
+.messages-table td:nth-child(6) { width: 300px; }  /* Message */
+.messages-table td:nth-child(7) { width: 140px; }  /* Date */
+.messages-table td:nth-child(8) { width: 140px; }  /* Actions */
+
 .messages-table td {
     padding: 1rem;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Allow message column to wrap */
+.messages-table td:nth-child(6) {
+    white-space: normal;
+    overflow: visible;
 }
 
 .messages-table tbody tr {
@@ -257,8 +311,10 @@ body {
 .message-actions {
     display: flex;
     gap: 0.5rem;
-    opacity: 0;
+    opacity: 0.7;
     transition: opacity 0.3s ease;
+    justify-content: center;
+    min-width: 120px;
 }
 
 .messages-table tbody tr:hover .message-actions {
@@ -471,8 +527,10 @@ body {
 /* Archives Table */
 .archives-table {
     width: 100%;
+    min-width: 1100px;
     border-collapse: collapse;
     font-size: 0.9rem;
+    table-layout: fixed;
 }
 
 .archives-table th {
@@ -487,11 +545,37 @@ body {
     z-index: 10;
 }
 
+/* Define specific column widths for archives table */
+.archives-table th:nth-child(1) { width: 150px; }  /* Nom */
+.archives-table th:nth-child(2) { width: 200px; }  /* Email */
+.archives-table th:nth-child(3) { width: 120px; }  /* Téléphone */
+.archives-table th:nth-child(4) { width: 300px; }  /* Message */
+.archives-table th:nth-child(5) { width: 140px; }  /* Date d'envoi */
+.archives-table th:nth-child(6) { width: 140px; }  /* Date d'archivage */
+.archives-table th:nth-child(7) { width: 150px; }  /* Actions */
+
+.archives-table td:nth-child(1) { width: 150px; }  /* Nom */
+.archives-table td:nth-child(2) { width: 200px; }  /* Email */
+.archives-table td:nth-child(3) { width: 120px; }  /* Téléphone */
+.archives-table td:nth-child(4) { width: 300px; }  /* Message */
+.archives-table td:nth-child(5) { width: 140px; }  /* Date d'envoi */
+.archives-table td:nth-child(6) { width: 140px; }  /* Date d'archivage */
+.archives-table td:nth-child(7) { width: 150px; }  /* Actions */
+
 .archives-table td {
     padding: 1rem;
     border-bottom: 1px solid #f1f5f9;
     vertical-align: top;
     color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Allow message column to wrap in archives */
+.archives-table td:nth-child(4) {
+    white-space: normal;
+    overflow: visible;
 }
 
 .archives-table tbody tr {
@@ -524,8 +608,10 @@ body {
 .archive-actions {
     display: flex;
     gap: 0.5rem;
-    opacity: 0;
+    opacity: 0.7;
     transition: opacity 0.3s ease;
+    justify-content: center;
+    min-width: 130px;
 }
 
 .archives-table tbody tr:hover .archive-actions {
@@ -806,12 +892,24 @@ body {
     
     .messages-table {
         font-size: 0.85rem;
+        min-width: 900px;
     }
     
     .messages-table th,
     .messages-table td {
         padding: 0.75rem 0.5rem;
     }
+    
+    /* Adjust column widths for tablets */
+    .messages-table th:nth-child(3) { width: 120px; }  /* Nom */
+    .messages-table th:nth-child(4) { width: 160px; }  /* Email */
+    .messages-table th:nth-child(5) { width: 100px; }  /* Téléphone */
+    .messages-table th:nth-child(6) { width: 250px; }  /* Message */
+    
+    .messages-table td:nth-child(3) { width: 120px; }  /* Nom */
+    .messages-table td:nth-child(4) { width: 160px; }  /* Email */
+    .messages-table td:nth-child(5) { width: 100px; }  /* Téléphone */
+    .messages-table td:nth-child(6) { width: 250px; }  /* Message */
     
     .message-preview {
         max-width: 200px;
@@ -825,12 +923,29 @@ body {
     
     .messages-table {
         font-size: 0.8rem;
+        min-width: 700px;
     }
     
     .messages-table th,
     .messages-table td {
         padding: 0.5rem 0.25rem;
     }
+    
+    /* Always show actions on mobile */
+    .message-actions {
+        opacity: 1;
+    }
+    
+    /* Reduce column widths for mobile */
+    .messages-table th:nth-child(3) { width: 100px; }  /* Nom */
+    .messages-table th:nth-child(4) { width: 140px; }  /* Email */
+    .messages-table th:nth-child(5) { width: 80px; }   /* Téléphone */
+    .messages-table th:nth-child(6) { width: 200px; }  /* Message */
+    
+    .messages-table td:nth-child(3) { width: 100px; }  /* Nom */
+    .messages-table td:nth-child(4) { width: 140px; }  /* Email */
+    .messages-table td:nth-child(5) { width: 80px; }   /* Téléphone */
+    .messages-table td:nth-child(6) { width: 200px; }  /* Message */
     
     .message-preview {
         max-width: 150px;
