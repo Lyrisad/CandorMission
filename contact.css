@@ -366,6 +366,7 @@ body {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     transition: all 0.3s ease;
     background: #f8fafc;
 }
@@ -382,6 +383,7 @@ body {
 .form-group textarea {
     resize: vertical;
     min-height: 120px;
+    font-family: 'Inter', sans-serif;
 }
 
 /* Custom Checkbox Styles */

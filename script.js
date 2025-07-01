@@ -65,17 +65,22 @@ window.addEventListener('scroll', () => {
         navLinks.forEach(link => {
             const href = link.getAttribute('href');
             
-            // Skip external page links
+            // Skip external page links that don't contain anchors
             if (href.includes('.html') && !href.includes('#')) {
                 return;
             }
             
-            // Remove active class from internal links
-            link.classList.remove('active');
-            
-            // Add active class to current section link
-            if (href === `#${current}`) {
-                link.classList.add('active');
+            // Handle anchor links on homepage
+            if (href.startsWith('#') || href.includes('index.html#')) {
+                link.classList.remove('active');
+                
+                // Extract the anchor part
+                const anchor = href.includes('#') ? href.split('#')[1] : '';
+                
+                // Add active class to current section link
+                if (anchor === current) {
+                    link.classList.add('active');
+                }
             }
         });
     }
@@ -93,13 +98,25 @@ document.addEventListener('DOMContentLoaded', () => {
         link.classList.remove('active');
         
         // Set active based on current page
-        if (currentPage === 'presentation.html' && href === 'presentation.html') {
+        if ((currentPage === 'index.html' || currentPage === '') && (href === 'index.html#accueil' || href === '#accueil')) {
+            // Homepage should activate the "Accueil" link (handles both href="#accueil" and href="index.html#accueil")
             link.classList.add('active');
-        } else if (currentPage === 'index.html' || currentPage === '') {
-            if (href === '#accueil') {
-                link.classList.add('active');
-            }
+        } else if (currentPage === 'faq.html' && href === 'faq.html') {
+            link.classList.add('active');
+        } else if (currentPage === 'presentation.html' && href === 'presentation.html') {
+            link.classList.add('active');
+        } else if (currentPage === 'contact.html' && href === 'contact.html') {
+            link.classList.add('active');
+        } else if ((currentPage === 'admin.html' || currentPage === 'inbox.html') && href === 'admin.html') {
+            // Both admin.html and inbox.html should highlight "Admin"
+            link.classList.add('active');
         }
+    });
+    
+    // Debug information
+    console.log('🔍 Navigation Debug:', {
+        currentPage: currentPage,
+        activeLinks: document.querySelectorAll('.nav-link.active').length
     });
 });
 

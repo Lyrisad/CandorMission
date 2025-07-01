@@ -563,6 +563,7 @@ body {
     border: none;
     outline: none;
     font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     color: #1e293b;
     background: transparent;
 }
@@ -1258,6 +1259,7 @@ body {
     border: none;
     outline: none;
     font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     color: #1e293b;
     background: transparent;
 }
@@ -1326,6 +1328,7 @@ body {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
     color: #1e293b;
     background: white;
     cursor: pointer;
@@ -1363,6 +1366,7 @@ body {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     color: #1e293b;
     background: white;
     transition: all 0.3s ease;
@@ -1379,6 +1383,7 @@ body {
 .form-group textarea {
     resize: vertical;
     min-height: 80px;
+    font-family: 'Inter', sans-serif;
 }
 
 /* Responsive FAQ Management */
@@ -1701,6 +1706,7 @@ body {
     border: 2px solid #e2e8f0;
     border-radius: 10px;
     font-size: 1rem;
+    font-family: 'Inter', sans-serif;
     color: #1e293b;
     background: white;
     transition: all 0.3s ease;
