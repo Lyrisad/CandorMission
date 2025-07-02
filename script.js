@@ -86,54 +86,6 @@ window.addEventListener('scroll', () => {
     }
 });
 
-// Set initial active state based on current page
-document.addEventListener('DOMContentLoaded', () => {
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    const navLinks = document.querySelectorAll('.nav-link');
-    
-    // Helper function to normalize page names (remove .html extension)
-    function normalizePageName(pageName) {
-        return pageName.replace('.html', '');
-    }
-    
-    // Helper function to normalize href (remove .html extension)
-    function normalizeHref(href) {
-        return href.replace('.html', '');
-    }
-    
-    navLinks.forEach(link => {
-        const href = link.getAttribute('href');
-        
-        // Remove all active classes first
-        link.classList.remove('active');
-        
-        // Normalize current page and href for comparison
-        const normalizedCurrentPage = normalizePageName(currentPage);
-        const normalizedHref = normalizeHref(href);
-        
-        // Set active based on current page
-        if ((normalizedCurrentPage === 'index' || normalizedCurrentPage === '') && (normalizedHref === 'index#accueil' || normalizedHref === '#accueil')) {
-            // Homepage should activate the "Accueil" link (handles both href="#accueil" and href="index.html#accueil")
-            link.classList.add('active');
-        } else if (normalizedCurrentPage === 'faq' && normalizedHref === 'faq') {
-            link.classList.add('active');
-        } else if (normalizedCurrentPage === 'presentation' && normalizedHref === 'presentation') {
-            link.classList.add('active');
-        } else if (normalizedCurrentPage === 'contact' && normalizedHref === 'contact') {
-            link.classList.add('active');
-        } else if ((normalizedCurrentPage === 'admin' || normalizedCurrentPage === 'inbox') && normalizedHref === 'admin') {
-            // Both admin and inbox should highlight "Admin"
-            link.classList.add('active');
-        }
-    });
-    
-    // Debug information
-    console.log('🔍 Navigation Debug:', {
-        currentPage: currentPage,
-        normalizedCurrentPage: normalizePageName(currentPage),
-        activeLinks: document.querySelectorAll('.nav-link.active').length
-    });
-});
 
 // Header background on scroll
 window.addEventListener('scroll', () => {
