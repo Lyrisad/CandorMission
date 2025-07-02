@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Logs elements
     const refreshLogsBtn = document.getElementById('refreshLogsBtn');
-    const refreshMessagesBtn = document.getElementById('refreshMessagesBtn');
     const exportLogsBtn = document.getElementById('exportLogsBtn');
     const logsLoading = document.getElementById('logsLoading');
     const logsTableContainer = document.getElementById('logsTableContainer');
@@ -72,10 +71,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Logs functionality
     if (refreshLogsBtn) {
         refreshLogsBtn.addEventListener('click', loadLogs);
-    }
-    
-    if (refreshMessagesBtn) {
-        refreshMessagesBtn.addEventListener('click', refreshMessageStats);
     }
     
     if (exportLogsBtn) {
@@ -1089,6 +1084,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelCategoryBtn = document.getElementById('cancelCategoryBtn');
     const cancelQuestionBtn = document.getElementById('cancelQuestionBtn');
     
+    // Delete Confirmation Modal Elements
+    const deleteCategoryModal = document.getElementById('deleteCategoryModal');
+    const deleteQuestionModal = document.getElementById('deleteQuestionModal');
+    const closeDeleteCategoryModalBtn = document.getElementById('closeDeleteCategoryModalBtn');
+    const closeDeleteQuestionModalBtn = document.getElementById('closeDeleteQuestionModalBtn');
+    const cancelDeleteCategoryBtn = document.getElementById('cancelDeleteCategoryBtn');
+    const cancelDeleteQuestionBtn = document.getElementById('cancelDeleteQuestionBtn');
+    const confirmDeleteCategoryBtn = document.getElementById('confirmDeleteCategoryBtn');
+    const confirmDeleteQuestionBtn = document.getElementById('confirmDeleteQuestionBtn');
+    const deleteCategoryName = document.getElementById('deleteCategoryName');
+    const deleteCategoryQuestionCount = document.getElementById('deleteCategoryQuestionCount');
+    const deleteQuestionText = document.getElementById('deleteQuestionText');
+    
+    // Delete confirmation state
+    let categoryToDelete = null;
+    let questionToDelete = null;
+    
     // FAQ State
     let faqCategories = [];
     let faqQuestions = [];
@@ -1200,6 +1212,43 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Delete confirmation modal event listeners
+    if (closeDeleteCategoryModalBtn) {
+        closeDeleteCategoryModalBtn.addEventListener('click', closeDeleteCategoryModal);
+    }
+    
+    if (closeDeleteQuestionModalBtn) {
+        closeDeleteQuestionModalBtn.addEventListener('click', closeDeleteQuestionModal);
+    }
+    
+    if (cancelDeleteCategoryBtn) {
+        cancelDeleteCategoryBtn.addEventListener('click', closeDeleteCategoryModal);
+    }
+    
+    if (cancelDeleteQuestionBtn) {
+        cancelDeleteQuestionBtn.addEventListener('click', closeDeleteQuestionModal);
+    }
+    
+    if (confirmDeleteCategoryBtn) {
+        confirmDeleteCategoryBtn.addEventListener('click', performDeleteCategory);
+    }
+    
+    if (confirmDeleteQuestionBtn) {
+        confirmDeleteQuestionBtn.addEventListener('click', performDeleteQuestion);
+    }
+    
+    // Close delete modals when clicking outside
+    [deleteCategoryModal, deleteQuestionModal].forEach(modal => {
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    if (modal === deleteCategoryModal) closeDeleteCategoryModal();
+                    if (modal === deleteQuestionModal) closeDeleteQuestionModal();
+                }
+            });
+        }
+    });
+    
     // Show FAQ Management
     function showFAQManagement() {
         dashboardCards.style.display = 'none';
@@ -1268,6 +1317,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderCategories();
                     updateCategorySelects();
                     updateCategoriesSearchResults();
+                    
+                    // Update question counts after categories are loaded
+                    updateQuestionCounts();
                 } else {
                     faqCategories = [];
                     filteredCategories = [];
@@ -1297,6 +1349,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     faqQuestions = data.values;
                     filteredQuestions = [...faqQuestions]; // Initialize filtered questions
                     renderQuestions();
+                    
+                    // Update question counts after questions are loaded
+                    updateQuestionCounts();
                 } else {
                     faqQuestions = [];
                     filteredQuestions = [];
@@ -1310,6 +1365,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 filteredQuestions = [];
                 showQuestionsEmpty();
             });
+    }
+    
+    // Update question counts for all categories
+    function updateQuestionCounts() {
+        // Only update if both categories and questions are loaded
+        if (faqCategories.length === 0 || faqQuestions.length === 0) {
+            return;
+        }
+        
+        // Update all category elements with correct question counts
+        const categoryElements = document.querySelectorAll('.category-item');
+        categoryElements.forEach(categoryElement => {
+            const categoryId = categoryElement.querySelector('.edit-category-btn').dataset.categoryId;
+            const questionCount = faqQuestions.filter(q => q.categorie === categoryId).length;
+            const badge = categoryElement.querySelector('.question-count-badge');
+            if (badge) {
+                badge.innerHTML = `<i class="fas fa-question-circle"></i> ${questionCount}`;
+            }
+        });
     }
     
     // Render Categories
@@ -1347,6 +1421,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.createElement('div');
         element.className = 'category-item';
         const emoji = category.emoji || '❓';
+        // Calcul du nombre de questions liées à cette catégorie
+        const questionCount = faqQuestions.filter(q => q.categorie === category.id).length;
         
         element.innerHTML = `
             <div class="category-header">
@@ -1354,6 +1430,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="category-name">
                         <span class="category-emoji">${emoji}</span>
                         ${escapeHtml(category.nom)}
+                        <span class="question-count-badge" title="Questions liées">
+                            <i class="fas fa-question-circle"></i> ${questionCount}
+                        </span>
                     </div>
                     ${category.description ? `<div class="category-description">${escapeHtml(category.description)}</div>` : ''}
                     <div class="category-meta">
@@ -1530,29 +1609,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const category = faqCategories.find(c => c.id === categoryId);
         if (!category) return;
         
-        if (confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${category.nom}" ? Cette action est irréversible.`)) {
-            const url = `${GOOGLE_SCRIPT_URL}?action=deleteCategory&id=${categoryId}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showSuccessToast('Catégorie supprimée avec succès');
-                        loadCategories();
-                        loadQuestions(); // Reload questions as they might be affected
-                        loadFAQStats(); // Reload FAQ stats
-                        // Add log for category deletion
-                        const action = `Catégorie supprimée: ${category.nom}`;
-                        sendLogWithIP(action);
-                    } else {
-                        showErrorToast('Erreur lors de la suppression');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting category:', error);
-                    showErrorToast('Erreur de connexion');
-                });
+        // Store category to delete and show confirmation modal
+        categoryToDelete = category;
+        
+        // Update modal content
+        deleteCategoryName.textContent = category.nom;
+        const questionCount = faqQuestions.filter(q => q.categorie === categoryId).length;
+        deleteCategoryQuestionCount.textContent = questionCount;
+        
+        // Update the warning message based on question count
+        const warningMessage = document.querySelector('.delete-message');
+        if (questionCount > 0) {
+            warningMessage.innerHTML = `Êtes-vous sûr de vouloir supprimer la catégorie <strong>${category.nom}</strong> ?<br><br><span style="color: #dc2626; font-weight: 600;">⚠️ Attention : ${questionCount} question${questionCount > 1 ? 's' : ''} seront également supprimée${questionCount > 1 ? 's' : ''} !</span>`;
+        } else {
+            warningMessage.innerHTML = `Êtes-vous sûr de vouloir supprimer la catégorie <strong>${category.nom}</strong> ?`;
         }
+        
+        // Show modal
+        deleteCategoryModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
     }
     
     // Loading and Empty States for Categories
@@ -1645,6 +1720,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Find category name
         const category = faqCategories.find(c => c.id === question.categorie);
         const categoryName = category ? category.nom : 'Catégorie inconnue';
+        const categoryEmoji = category ? (category.emoji || '📁') : '📁';
         
         const element = document.createElement('div');
         element.className = 'question-item';
@@ -1654,7 +1730,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="question-text">${escapeHtml(question.question)}</div>
                     <div class="question-answer">${escapeHtml(question.reponse.substring(0, 150))}${question.reponse.length > 150 ? '...' : ''}</div>
                     <div class="question-meta">
-                        <span>Catégorie: ${escapeHtml(categoryName)}</span>
+                        <span class="category-badge">
+                            <span class="category-emoji">${categoryEmoji}</span>
+                            ${escapeHtml(categoryName)}
+                        </span>
                         <span>Créé le: ${formatDate(question.cree_le)}</span>
                         ${question.modifie_le ? `<span>Modifié le: ${formatDate(question.modifie_le)}</span>` : ''}
                         <span class="visibility-status ${question.visible ? 'visible' : 'hidden'}">
@@ -1756,6 +1835,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     closeQuestionModal();
                     loadQuestions();
                     loadFAQStats(); // Reload FAQ stats
+                    
+                    // Update question counts after a short delay
+                    setTimeout(() => {
+                        updateQuestionCounts();
+                    }, 500);
+                    
                     // Add log for question action
                     const logAction = `Question ${currentEditingQuestion ? 'modifiée' : 'créée'}: ${questionData.question.substring(0, 50)}${questionData.question.length > 50 ? '...' : ''}`;
                     sendLogWithIP(logAction);
@@ -1791,6 +1876,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.success) {
                     showSuccessToast(`Question ${newVisibility ? 'affichée' : 'masquée'}`);
                     loadQuestions();
+                    
+                    // Update question counts after a short delay
+                    setTimeout(() => {
+                        updateQuestionCounts();
+                    }, 500);
+                    
                     // Add log for visibility toggle
                     const logAction = `Question ${newVisibility ? 'affichée' : 'masquée'}: ${question.question.substring(0, 50)}${question.question.length > 50 ? '...' : ''}`;
                     sendLogWithIP(logAction);
@@ -1808,28 +1899,66 @@ document.addEventListener('DOMContentLoaded', function() {
         const question = faqQuestions.find(q => q.id === questionId);
         if (!question) return;
         
-        if (confirm(`Êtes-vous sûr de vouloir supprimer la question "${question.question}" ? Cette action est irréversible.`)) {
-            const url = `${GOOGLE_SCRIPT_URL}?action=deleteFAQ&id=${questionId}`;
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showSuccessToast('Question supprimée avec succès');
-                        loadQuestions();
-                        loadFAQStats(); // Reload FAQ stats
-                        // Add log for question deletion
-                        const logAction = `Question supprimée: ${question.question.substring(0, 50)}${question.question.length > 50 ? '...' : ''}`;
-                        sendLogWithIP(logAction);
-                    } else {
-                        showErrorToast('Erreur lors de la suppression');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting question:', error);
-                    showErrorToast('Erreur de connexion');
-                });
-        }
+        // Store question to delete and show confirmation modal
+        questionToDelete = question;
+        
+        // Update modal content
+        deleteQuestionText.textContent = question.question;
+        
+        // Show modal
+        deleteQuestionModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Delete modal functions
+    function closeDeleteQuestionModal() {
+        deleteQuestionModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        questionToDelete = null;
+    }
+    
+    function performDeleteQuestion() {
+        if (!questionToDelete) return;
+        
+        const questionId = questionToDelete.id;
+        const questionText = questionToDelete.question;
+        
+        // Show loading state
+        confirmDeleteQuestionBtn.disabled = true;
+        confirmDeleteQuestionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+        
+        const url = `${GOOGLE_SCRIPT_URL}?action=deleteFAQ&id=${questionId}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessToast('Question supprimée avec succès');
+                    closeDeleteQuestionModal();
+                    loadQuestions();
+                    loadFAQStats(); // Reload FAQ stats
+                    
+                    // Update question counts after a short delay
+                    setTimeout(() => {
+                        updateQuestionCounts();
+                    }, 500);
+                    
+                    // Add log for question deletion
+                    const logAction = `Question supprimée: ${questionText.substring(0, 50)}${questionText.length > 50 ? '...' : ''}`;
+                    sendLogWithIP(logAction);
+                } else {
+                    showErrorToast('Erreur lors de la suppression');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting question:', error);
+                showErrorToast('Erreur de connexion');
+            })
+            .finally(() => {
+                // Reset button state
+                confirmDeleteQuestionBtn.disabled = false;
+                confirmDeleteQuestionBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer définitivement';
+            });
     }
     
     // Helper function to send logs with IP
@@ -1901,7 +2030,7 @@ document.addEventListener('DOMContentLoaded', function() {
             '⚽', '🏀', '🏈', '⚾', '🥎', '🎾', '🏐', '🏉', '🥏', '🎱', '🪀', '🏓', '🏸', '🏒', '🏑', '🥍',
             '🏏', '🥅', '⛳', '🪁', '🏹', '🎣', '🤿', '🥊', '🥋', '🎽', '🛹', '🛷', '⛸️', '🥌', '🎿', '⛷️',
             '🏂', '🪂', '🏋️', '🤼', '🤸', '⛹️', '🤺', '🏇', '🧘', '🏄', '🏊', '🤽', '🚣', '🧗', '🚴', '🚵',
-            '🎖️', '🏆', '🏅', '🥇', '🥈', '🥉', '🎗️', '🎫', '🎟️', '🎪', '🤹', '🎭', '🩰', '🎨', '🎬', '🎤',
+            '🎖️', '🏆', '🏅', '🥇', '🥈', '🥉', '🎗️', '��', '🎟️', '🎪', '🤹', '🎭', '🩰', '🎨', '🎬', '🎤',
             '🎧', '🎼', '🎵', '🎶', '🥾', '🎯', '🎲', '🎰', '🎳', '🎮', '🕹️', '🎸', '🥁', '🎺', '🎷', '🎻',
             '🪕', '🎹', '🪗', '🪘', '🎪', '🎭', '🎨', '🎬', '🎤', '🎧', '🎼', '🎵', '🎶'
         ],
@@ -2142,6 +2271,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Refresh FAQ stats
         loadFAQStats();
+        
+        // Update question counts after a short delay to ensure both data are loaded
+        setTimeout(() => {
+            updateQuestionCounts();
+        }, 1000);
         
         // Reset button after 2 seconds
         setTimeout(() => {
@@ -2400,5 +2534,127 @@ document.addEventListener('DOMContentLoaded', function() {
     function refreshMessageStats() {
         resetMessageStatsPlaceholder();
         loadMessageStats();
+    }
+    
+    // ===== GUILD MODAL FUNCTIONALITY =====
+    const guildBtn = document.getElementById('guildBtn');
+    const guildModal = document.getElementById('guildModal');
+    const closeGuildModalBtn = document.getElementById('closeGuildModalBtn');
+    const closeGuildBtn = document.getElementById('closeGuildBtn');
+    const guildTabBtns = document.querySelectorAll('.guild-tab-btn');
+    const inboxTutorial = document.getElementById('inboxTutorial');
+    const faqTutorial = document.getElementById('faqTutorial');
+    const guildTabContents = {
+        inbox: inboxTutorial,
+        faq: faqTutorial
+    };
+
+    if (guildBtn && guildModal) {
+        guildBtn.addEventListener('click', () => {
+            guildModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+    }
+    [closeGuildModalBtn, closeGuildBtn].forEach(btn => {
+        if (btn) btn.addEventListener('click', closeGuildModal);
+    });
+    function closeGuildModal() {
+        guildModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    // Tab switching
+    guildTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            guildTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            Object.values(guildTabContents).forEach(tab => tab.classList.remove('active'));
+            const tab = btn.dataset.tab;
+            if (guildTabContents[tab]) guildTabContents[tab].classList.add('active');
+        });
+    });
+    // Fermer le modal Guild en cliquant en dehors
+    if (guildModal) {
+        guildModal.addEventListener('click', function(e) {
+            if (e.target === guildModal) closeGuildModal();
+        });
+    }
+    
+    // Delete modal functions
+    function closeDeleteCategoryModal() {
+        deleteCategoryModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        categoryToDelete = null;
+        
+        // Reset the warning message
+        const warningMessage = document.querySelector('.delete-message');
+        warningMessage.innerHTML = 'Êtes-vous sûr de vouloir supprimer la catégorie <strong id="deleteCategoryName"></strong> ?';
+    }
+    
+    function closeDeleteQuestionModal() {
+        deleteQuestionModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        questionToDelete = null;
+    }
+    
+    function performDeleteCategory() {
+        if (!categoryToDelete) return;
+        
+        const categoryId = categoryToDelete.id;
+        const categoryName = categoryToDelete.nom;
+        
+        // Show loading state
+        confirmDeleteCategoryBtn.disabled = true;
+        confirmDeleteCategoryBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+        
+        // First, get all questions in this category
+        const questionsInCategory = faqQuestions.filter(q => q.categorie === categoryId);
+        
+        // Create promises for deleting all questions in the category
+        const deleteQuestionPromises = questionsInCategory.map(question => {
+            const url = `${GOOGLE_SCRIPT_URL}?action=deleteFAQ&id=${question.id}`;
+            return fetch(url).then(response => response.json());
+        });
+        
+        // Delete all questions first, then delete the category
+        Promise.all(deleteQuestionPromises)
+            .then(() => {
+                // Now delete the category
+                const categoryUrl = `${GOOGLE_SCRIPT_URL}?action=deleteCategory&id=${categoryId}`;
+                return fetch(categoryUrl).then(response => response.json());
+            })
+            .then(data => {
+                if (data.success) {
+                    const questionCount = questionsInCategory.length;
+                    const message = questionCount > 0 
+                        ? `Catégorie et ${questionCount} question${questionCount > 1 ? 's' : ''} supprimée${questionCount > 1 ? 's' : ''} avec succès`
+                        : 'Catégorie supprimée avec succès';
+                    
+                    showSuccessToast(message);
+                    closeDeleteCategoryModal();
+                    loadCategories();
+                    loadQuestions(); // Reload questions as they might be affected
+                    loadFAQStats(); // Reload FAQ stats
+                    
+                    // Update question counts after a short delay
+                    setTimeout(() => {
+                        updateQuestionCounts();
+                    }, 500);
+                    
+                    // Add log for category deletion
+                    const action = `Catégorie supprimée: ${categoryName} (${questionCount} question${questionCount > 1 ? 's' : ''} supprimée${questionCount > 1 ? 's' : ''})`;
+                    sendLogWithIP(action);
+                } else {
+                    showErrorToast('Erreur lors de la suppression de la catégorie');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting category and questions:', error);
+                showErrorToast('Erreur de connexion lors de la suppression');
+            })
+            .finally(() => {
+                // Reset button state
+                confirmDeleteCategoryBtn.disabled = false;
+                confirmDeleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer définitivement';
+            });
     }
 }); 

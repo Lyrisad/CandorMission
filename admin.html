@@ -104,11 +104,20 @@
                 <!-- Admin Dashboard (Hidden by default) -->
                 <div class="dashboard-container" id="dashboard" style="display: none;">
                     <div class="dashboard-header">
-                        <h1>🎯 Dashboard Admin</h1>
-                        <button class="logout-btn" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Déconnexion
-                        </button>
+                        <div class="dashboard-title-section">
+                            <h1>🎯 Dashboard Admin</h1>
+                            <p class="dashboard-welcome">Bienvenue héro ! C'est ici que vous prenez le contrôle de votre mission.</p>
+                        </div>
+                        <div class="dashboard-actions">
+                            <button class="logout-btn" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Déconnexion
+                            </button>
+                            <button class="guild-btn" id="guildBtn">
+                                <i class="fas fa-book-open"></i>
+                                Guild
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="dashboard-cards">
@@ -201,10 +210,6 @@
                         <div class="logs-header">
                             <h2>📋 Logs d'activité</h2>
                             <div class="logs-actions">
-                                <button class="refresh-messages-btn" id="refreshMessagesBtn">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Actualiser Messages
-                                </button>
                                 <button class="refresh-logs-btn" id="refreshLogsBtn">
                                     <i class="fas fa-sync-alt"></i>
                                     Actualiser
@@ -496,6 +501,250 @@
                     <button class="btn btn-primary" id="saveQuestionBtn">
                         <i class="fas fa-save"></i>
                         Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guild Tutorial Modal -->
+        <div id="guildModal" class="modal">
+            <div class="modal-content guild-modal-content">
+                <div class="modal-header">
+                    <h2>📚 Guild - Guide du Héro</h2>
+                    <button class="close-btn" id="closeGuildModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="guild-tabs">
+                        <button class="guild-tab-btn active" data-tab="inbox">
+                            <i class="fas fa-inbox"></i>
+                            Boîte de réception
+                        </button>
+                        <button class="guild-tab-btn" data-tab="faq">
+                            <i class="fas fa-question-circle"></i>
+                            Gérer la FAQ
+                        </button>
+                    </div>
+
+                    <!-- Inbox Tutorial Tab -->
+                    <div class="guild-tab-content active" id="inboxTutorial">
+                        <div class="tutorial-section">
+                            <h3><i class="fas fa-inbox"></i> Boîte de réception</h3>
+                            <p class="tutorial-intro">Apprenez à gérer efficacement les messages reçus via le formulaire de contact.</p>
+                            
+                            <div class="tutorial-steps">
+                                <div class="tutorial-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4>Accéder à la boîte de réception</h4>
+                                        <p>Cliquez sur le bouton "Accéder" de la carte "📬 Boîte de réception" pour ouvrir la page de gestion des messages.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h4>Consulter les messages</h4>
+                                        <p>Vous verrez tous les messages reçus avec les informations de l'expéditeur, la date et le contenu du message.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h4>Marquer comme lu</h4>
+                                        <p>Cliquez sur un message pour le marquer comme lu. Le badge "non lus" se mettra à jour automatiquement.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h4>Archiver les messages</h4>
+                                        <p>Utilisez le bouton "Archiver" pour ranger les messages traités. Ils restent accessibles dans la section archives.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <h4>Supprimer définitivement</h4>
+                                        <p>Pour les messages non désirés, utilisez le bouton "Supprimer" pour les retirer définitivement.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tutorial-tips">
+                                <h4><i class="fas fa-lightbulb"></i> Conseils</h4>
+                                <ul>
+                                    <li>Vérifiez régulièrement les nouveaux messages</li>
+                                    <li>Archivez les messages traités pour garder une boîte propre</li>
+                                    <li>Les statistiques se mettent à jour automatiquement</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Tutorial Tab -->
+                    <div class="guild-tab-content" id="faqTutorial">
+                        <div class="tutorial-section">
+                            <h3><i class="fas fa-question-circle"></i> Gérer la FAQ</h3>
+                            <p class="tutorial-intro">Créez et organisez votre FAQ pour offrir une excellente expérience utilisateur.</p>
+                            
+                            <div class="tutorial-steps">
+                                <div class="tutorial-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-content">
+                                        <h4>Accéder à la gestion FAQ</h4>
+                                        <p>Cliquez sur le bouton "Accéder" de la carte "❓ Gérer la FAQ" pour ouvrir l'interface de gestion.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-content">
+                                        <h4>Gérer les catégories</h4>
+                                        <p>Onglet "Catégories" : Créez des catégories avec des emojis pour organiser vos questions. Chaque catégorie peut être visible ou masquée.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-content">
+                                        <h4>Ajouter des questions</h4>
+                                        <p>Onglet "Questions/Réponses" : Créez des questions en sélectionnant une catégorie et en rédigeant la question et sa réponse.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-content">
+                                        <h4>Organiser le contenu</h4>
+                                        <p>Utilisez les filtres par catégorie et la recherche pour trouver rapidement vos questions. Modifiez ou supprimez selon vos besoins.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="tutorial-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-content">
+                                        <h4>Contrôler la visibilité</h4>
+                                        <p>Chaque question et catégorie peut être visible ou masquée sur le site public. Utilisez les boutons d'œil pour basculer.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="tutorial-tips">
+                                <h4><i class="fas fa-lightbulb"></i> Conseils</h4>
+                                <ul>
+                                    <li>Créez des catégories claires avec des emojis pertinents</li>
+                                    <li>Rédigez des réponses complètes et claires</li>
+                                    <li>Organisez les questions par ordre de fréquence</li>
+                                    <li>Testez la visibilité avant de publier</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="closeGuildBtn">
+                        <i class="fas fa-check"></i>
+                        J'ai compris !
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Category Confirmation Modal -->
+        <div id="deleteCategoryModal" class="modal">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header delete-header">
+                    <div class="delete-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>🗑️ Supprimer la catégorie</h2>
+                    <button class="close-btn" id="closeDeleteCategoryModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="delete-warning">
+                        <p class="delete-message">
+                            Êtes-vous sûr de vouloir supprimer la catégorie <strong id="deleteCategoryName"></strong> ?
+                        </p>
+                        <div class="delete-details">
+                            <div class="delete-detail-item">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Cette catégorie contient <strong id="deleteCategoryQuestionCount">0</strong> question(s)</span>
+                            </div>
+                            <div class="delete-detail-item">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Cette action est <strong>irréversible</strong></span>
+                            </div>
+                            <div class="delete-detail-item">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Les questions de cette catégorie seront également supprimées</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelDeleteCategoryBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-danger" id="confirmDeleteCategoryBtn">
+                        <i class="fas fa-trash"></i>
+                        Supprimer définitivement
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Question Confirmation Modal -->
+        <div id="deleteQuestionModal" class="modal">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header delete-header">
+                    <div class="delete-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>🗑️ Supprimer la question</h2>
+                    <button class="close-btn" id="closeDeleteQuestionModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="delete-warning">
+                        <p class="delete-message">
+                            Êtes-vous sûr de vouloir supprimer cette question ?
+                        </p>
+                        <div class="delete-question-preview">
+                            <div class="question-preview-header">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Question :</span>
+                            </div>
+                            <div class="question-preview-text" id="deleteQuestionText"></div>
+                        </div>
+                        <div class="delete-details">
+                            <div class="delete-detail-item">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Cette action est <strong>irréversible</strong></span>
+                            </div>
+                            <div class="delete-detail-item">
+                                <i class="fas fa-info-circle"></i>
+                                <span>La question et sa réponse seront définitivement supprimées</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelDeleteQuestionBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-danger" id="confirmDeleteQuestionBtn">
+                        <i class="fas fa-trash"></i>
+                        Supprimer définitivement
                     </button>
                 </div>
             </div>
