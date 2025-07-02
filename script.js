@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if ((currentPage === 'index.html' || currentPage === '') && (href === 'index.html#accueil' || href === '#accueil')) {
             // Homepage should activate the "Accueil" link (handles both href="#accueil" and href="index.html#accueil")
             link.classList.add('active');
-        } else if (currentPage === 'faq.html' && href === 'faq.html') {
+        } else if (currentPage === 'faq.html' && href === 'faq.html' || href === 'faq') {
             link.classList.add('active');
         } else if (currentPage === 'presentation.html' && href === 'presentation.html') {
             link.classList.add('active');
