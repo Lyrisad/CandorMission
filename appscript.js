@@ -346,13 +346,16 @@ function doGet(e) {
       }
       
     } else if (action == "deleteArchivedMessage") {
-      // Suppression définitive d'un message archivé
+      // Supprimer un message archivé définitivement
       var archiveSheet = ss.getSheetByName("MessagesArchive");
       var messageId = e.parameter.id;
       
       if (!archiveSheet) {
         result.success = false;
         result.error = "Feuille 'MessagesArchive' non trouvée";
+      } else if (!messageId) {
+        result.success = false;
+        result.error = "ID de message manquant";
       } else {
         var data = archiveSheet.getDataRange().getValues();
         var found = false;
@@ -365,15 +368,88 @@ function doGet(e) {
           }
         }
         
-        // Ajouter un log automatique avec l'IP du client
-        if (found) {
-          var clientIP = e.parameter.clientIP || "Admin Panel";
-          addAutomaticLog("Message supprimé définitivement (ID: " + messageId + ")", clientIP);
-        }
-        
         result.success = found;
         if (!found) result.error = "Message archivé non trouvé";
       }
+      
+    } else if (action == "getFAQStats") {
+      // Récupérer les statistiques FAQ (nombre de catégories et questions)
+      var categoriesSheet = ss.getSheetByName("CATEGORIES");
+      var faqSheet = ss.getSheetByName("FAQ");
+      
+      var categoriesCount = 0;
+      var questionsCount = 0;
+      var visibleCategoriesCount = 0;
+      var visibleQuestionsCount = 0;
+      
+      // Compter les catégories
+      if (categoriesSheet) {
+        var categoriesData = categoriesSheet.getDataRange().getValues();
+        categoriesCount = categoriesData.length - 1; // Exclure l'en-tête
+        
+        // Compter les catégories visibles
+        for (var i = 1; i < categoriesData.length; i++) {
+          if (categoriesData[i][5] === true) { // Colonne visible
+            visibleCategoriesCount++;
+          }
+        }
+      }
+      
+      // Compter les questions
+      if (faqSheet) {
+        var faqData = faqSheet.getDataRange().getValues();
+        questionsCount = faqData.length - 1; // Exclure l'en-tête
+        
+        // Compter les questions visibles
+        for (var i = 1; i < faqData.length; i++) {
+          if (faqData[i][6] === true) { // Colonne visible
+            visibleQuestionsCount++;
+          }
+        }
+      }
+      
+      result.success = true;
+      result.stats = {
+        totalCategories: categoriesCount,
+        totalQuestions: questionsCount,
+        visibleCategories: visibleCategoriesCount,
+        visibleQuestions: visibleQuestionsCount
+      };
+      
+    } else if (action == "getMessageStats") {
+      // Récupérer les statistiques des messages (total, non lus, archivés)
+      var messagesSheet = ss.getSheetByName(SHEET_NAME);
+      var archiveSheet = ss.getSheetByName("MessagesArchive");
+      
+      var totalMessages = 0;
+      var unreadMessages = 0;
+      var archivedMessages = 0;
+      
+      // Compter les messages dans la feuille principale
+      if (messagesSheet) {
+        var messagesData = messagesSheet.getDataRange().getValues();
+        totalMessages = messagesData.length - 1; // Exclure l'en-tête
+        
+        // Compter les messages non lus
+        for (var i = 1; i < messagesData.length; i++) {
+          if (messagesData[i][5] === false) { // Colonne READ
+            unreadMessages++;
+          }
+        }
+      }
+      
+      // Compter les messages archivés
+      if (archiveSheet) {
+        var archiveData = archiveSheet.getDataRange().getValues();
+        archivedMessages = archiveData.length - 1; // Exclure l'en-tête
+      }
+      
+      result.success = true;
+      result.stats = {
+        totalMessages: totalMessages,
+        unreadMessages: unreadMessages,
+        archivedMessages: archivedMessages
+      };
       
     } else if (action == "readLogs") {
       // Lecture de tous les logs

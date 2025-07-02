@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Logs elements
     const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+    const refreshMessagesBtn = document.getElementById('refreshMessagesBtn');
     const exportLogsBtn = document.getElementById('exportLogsBtn');
     const logsLoading = document.getElementById('logsLoading');
     const logsTableContainer = document.getElementById('logsTableContainer');
@@ -71,6 +72,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Logs functionality
     if (refreshLogsBtn) {
         refreshLogsBtn.addEventListener('click', loadLogs);
+    }
+    
+    if (refreshMessagesBtn) {
+        refreshMessagesBtn.addEventListener('click', refreshMessageStats);
     }
     
     if (exportLogsBtn) {
@@ -230,6 +235,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load unread message count
         loadUnreadCount();
         
+        // Load message statistics
+        loadMessageStats();
+        
+        // Load FAQ statistics
+        loadFAQStats();
+        
         // Load logs
         loadLogs();
     }
@@ -256,6 +267,130 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error loading unread count:', error);
+            });
+    }
+    
+    // Load FAQ statistics
+    function loadFAQStats() {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getFAQStats`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.stats) {
+                    const stats = data.stats;
+                    
+                    // Update FAQ card with statistics
+                    const faqCard = document.querySelector('.admin-card:nth-child(2)');
+                    if (faqCard) {
+                        const cardContent = faqCard.querySelector('.card-content');
+                        const existingStats = cardContent.querySelector('.faq-stats');
+                        const placeholder = cardContent.querySelector('#faqStatsPlaceholder');
+                        
+                        // Create stats element
+                        const statsElement = document.createElement('div');
+                        statsElement.className = 'faq-stats';
+                        statsElement.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.visibleCategories}</span>
+                                    <span class="stat-label">Catégories</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.visibleQuestions}</span>
+                                    <span class="stat-label">Questions</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // If placeholder exists, replace it with animation
+                        if (placeholder) {
+                            // Add fade out animation to placeholder
+                            placeholder.style.transition = 'all 0.5s ease';
+                            placeholder.style.opacity = '0';
+                            placeholder.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                // Replace placeholder with real stats
+                                placeholder.replaceWith(statsElement);
+                                
+                                // Add fade in animation to new stats
+                                statsElement.style.opacity = '0';
+                                statsElement.style.transform = 'scale(0.95)';
+                                
+                                setTimeout(() => {
+                                    statsElement.style.transition = 'all 0.5s ease';
+                                    statsElement.style.opacity = '1';
+                                    statsElement.style.transform = 'scale(1)';
+                                }, 50);
+                            }, 500);
+                        } else {
+                            // Remove existing stats if any
+                            if (existingStats) {
+                                existingStats.remove();
+                            }
+                            
+                            // Insert stats before the button
+                            const cardBtn = cardContent.querySelector('.card-btn');
+                            if (cardBtn) {
+                                cardContent.insertBefore(statsElement, cardBtn);
+                            } else {
+                                cardContent.appendChild(statsElement);
+                            }
+                            
+                            // Add fade in animation
+                            statsElement.style.opacity = '0';
+                            statsElement.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                statsElement.style.transition = 'all 0.5s ease';
+                                statsElement.style.opacity = '1';
+                                statsElement.style.transform = 'scale(1)';
+                            }, 50);
+                        }
+                    }
+                } else {
+                    // If no data, show error state in placeholder
+                    const placeholder = document.querySelector('#faqStatsPlaceholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Catégories</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Questions</span>
+                                </div>
+                            </div>
+                        `;
+                        placeholder.style.animation = 'none';
+                        placeholder.style.opacity = '0.6';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading FAQ stats:', error);
+                
+                // Show error state in placeholder
+                const placeholder = document.querySelector('#faqStatsPlaceholder');
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Catégories</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Questions</span>
+                            </div>
+                        </div>
+                    `;
+                    placeholder.style.animation = 'none';
+                    placeholder.style.opacity = '0.6';
+                }
             });
     }
     
@@ -1342,6 +1477,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showSuccessToast(currentEditingCategory ? 'Catégorie modifiée avec succès' : 'Catégorie créée avec succès');
                     closeCategoryModal();
                     loadCategories();
+                    loadFAQStats(); // Reload FAQ stats
                     // Add log for category action
                     const action = `Catégorie ${currentEditingCategory ? 'modifiée' : 'créée'}: ${categoryData.nom}`;
                     sendLogWithIP(action);
@@ -1404,6 +1540,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         showSuccessToast('Catégorie supprimée avec succès');
                         loadCategories();
                         loadQuestions(); // Reload questions as they might be affected
+                        loadFAQStats(); // Reload FAQ stats
                         // Add log for category deletion
                         const action = `Catégorie supprimée: ${category.nom}`;
                         sendLogWithIP(action);
@@ -1618,6 +1755,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     showSuccessToast(currentEditingQuestion ? 'Question modifiée avec succès' : 'Question créée avec succès');
                     closeQuestionModal();
                     loadQuestions();
+                    loadFAQStats(); // Reload FAQ stats
                     // Add log for question action
                     const logAction = `Question ${currentEditingQuestion ? 'modifiée' : 'créée'}: ${questionData.question.substring(0, 50)}${questionData.question.length > 50 ? '...' : ''}`;
                     sendLogWithIP(logAction);
@@ -1679,6 +1817,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         showSuccessToast('Question supprimée avec succès');
                         loadQuestions();
+                        loadFAQStats(); // Reload FAQ stats
                         // Add log for question deletion
                         const logAction = `Question supprimée: ${question.question.substring(0, 50)}${question.question.length > 50 ? '...' : ''}`;
                         sendLogWithIP(logAction);
@@ -1948,6 +2087,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== FAQ SEARCH FUNCTIONALITY =====
     
+    // Reset FAQ stats placeholder
+    function resetFAQStatsPlaceholder() {
+        const faqCard = document.querySelector('.admin-card:nth-child(2)');
+        if (faqCard) {
+            const cardContent = faqCard.querySelector('.card-content');
+            const existingStats = cardContent.querySelector('.faq-stats');
+            const placeholder = cardContent.querySelector('#faqStatsPlaceholder');
+            
+            // Remove existing stats if any
+            if (existingStats && !existingStats.id) {
+                existingStats.remove();
+            }
+            
+            // Reset placeholder if it exists
+            if (placeholder) {
+                placeholder.innerHTML = `
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Catégories</span>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Questions</span>
+                        </div>
+                    </div>
+                `;
+                placeholder.style.animation = 'pulse 2s ease-in-out infinite';
+                placeholder.style.opacity = '0.8';
+                placeholder.style.transform = 'scale(1)';
+            }
+        }
+    }
+    
     // Refresh FAQ Data
     function refreshFAQData() {
         // Show loading animation on refresh button
@@ -1956,9 +2133,15 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
         refreshBtn.disabled = true;
         
+        // Reset placeholder first
+        resetFAQStatsPlaceholder();
+        
         // Refresh both categories and questions
         loadCategories();
         loadQuestions();
+        
+        // Refresh FAQ stats
+        loadFAQStats();
         
         // Reset button after 2 seconds
         setTimeout(() => {
@@ -2049,5 +2232,173 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             questionsSearchResults.style.display = 'none';
         }
+    }
+    
+    // Load message statistics
+    function loadMessageStats() {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getMessageStats`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.stats) {
+                    const stats = data.stats;
+                    
+                    // Update message card with statistics
+                    const messageCard = document.querySelector('.admin-card:nth-child(1)');
+                    if (messageCard) {
+                        const cardContent = messageCard.querySelector('.card-content');
+                        const existingStats = cardContent.querySelector('.message-stats');
+                        const placeholder = cardContent.querySelector('#messageStatsPlaceholder');
+                        
+                        // Create stats element
+                        const statsElement = document.createElement('div');
+                        statsElement.className = 'message-stats';
+                        statsElement.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.totalMessages}</span>
+                                    <span class="stat-label">Messages</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.archivedMessages}</span>
+                                    <span class="stat-label">Archives</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // If placeholder exists, replace it with animation
+                        if (placeholder) {
+                            // Add fade out animation to placeholder
+                            placeholder.style.transition = 'all 0.5s ease';
+                            placeholder.style.opacity = '0';
+                            placeholder.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                // Replace placeholder with real stats
+                                placeholder.replaceWith(statsElement);
+                                
+                                // Add fade in animation to new stats
+                                statsElement.style.opacity = '0';
+                                statsElement.style.transform = 'scale(0.95)';
+                                
+                                setTimeout(() => {
+                                    statsElement.style.transition = 'all 0.5s ease';
+                                    statsElement.style.opacity = '1';
+                                    statsElement.style.transform = 'scale(1)';
+                                }, 50);
+                            }, 500);
+                        } else {
+                            // Remove existing stats if any
+                            if (existingStats) {
+                                existingStats.remove();
+                            }
+                            
+                            // Insert stats before the button
+                            const cardBtn = cardContent.querySelector('.card-btn');
+                            if (cardBtn) {
+                                cardContent.insertBefore(statsElement, cardBtn);
+                            } else {
+                                cardContent.appendChild(statsElement);
+                            }
+                            
+                            // Add fade in animation
+                            statsElement.style.opacity = '0';
+                            statsElement.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                statsElement.style.transition = 'all 0.5s ease';
+                                statsElement.style.opacity = '1';
+                                statsElement.style.transform = 'scale(1)';
+                            }, 50);
+                        }
+                    }
+                } else {
+                    // If no data, show error state in placeholder
+                    const placeholder = document.querySelector('#messageStatsPlaceholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Messages</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Archives</span>
+                                </div>
+                            </div>
+                        `;
+                        placeholder.style.animation = 'none';
+                        placeholder.style.opacity = '0.6';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading message stats:', error);
+                
+                // Show error state in placeholder
+                const placeholder = document.querySelector('#messageStatsPlaceholder');
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Messages</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Archives</span>
+                            </div>
+                        </div>
+                    `;
+                    placeholder.style.animation = 'none';
+                    placeholder.style.opacity = '0.6';
+                }
+            });
+    }
+    
+    // Reset message stats placeholder
+    function resetMessageStatsPlaceholder() {
+        const messageCard = document.querySelector('.admin-card:nth-child(1)');
+        if (messageCard) {
+            const cardContent = messageCard.querySelector('.card-content');
+            const existingStats = cardContent.querySelector('.message-stats');
+            const placeholder = cardContent.querySelector('#messageStatsPlaceholder');
+            
+            // Remove existing stats if any
+            if (existingStats && !existingStats.id) {
+                existingStats.remove();
+            }
+            
+            // Reset placeholder if it exists
+            if (placeholder) {
+                placeholder.innerHTML = `
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Messages</span>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Archives</span>
+                        </div>
+                    </div>
+                `;
+                placeholder.style.animation = 'pulse 2s ease-in-out infinite';
+                placeholder.style.opacity = '0.8';
+                placeholder.style.transform = 'scale(1)';
+            }
+        }
+    }
+    
+    // Refresh message statistics
+    function refreshMessageStats() {
+        resetMessageStatsPlaceholder();
+        loadMessageStats();
     }
 }); 

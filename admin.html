@@ -122,6 +122,25 @@
                             <div class="card-content">
                                 <h3>📬 Boîte de réception</h3>
                                 <p>Gérez les messages reçus via le formulaire de contact</p>
+                                
+                                <!-- Message Stats Placeholder -->
+                                <div class="message-stats" id="messageStatsPlaceholder">
+                                    <div class="stats-container">
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Messages</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Archives</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <a href="inbox.html" class="card-btn">
                                     <i class="fas fa-arrow-right"></i>
                                     Accéder
@@ -136,6 +155,25 @@
                             <div class="card-content">
                                 <h3>❓ Gérer la FAQ</h3>
                                 <p>Ajoutez, modifiez ou supprimez des questions/réponses</p>
+                                
+                                <!-- FAQ Stats Placeholder -->
+                                <div class="faq-stats" id="faqStatsPlaceholder">
+                                    <div class="stats-container">
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Catégories</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Questions</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <button class="card-btn" id="manageFaqBtn">
                                     <i class="fas fa-arrow-right"></i>
                                     Accéder
@@ -163,6 +201,10 @@
                         <div class="logs-header">
                             <h2>📋 Logs d'activité</h2>
                             <div class="logs-actions">
+                                <button class="refresh-messages-btn" id="refreshMessagesBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Actualiser Messages
+                                </button>
                                 <button class="refresh-logs-btn" id="refreshLogsBtn">
                                     <i class="fas fa-sync-alt"></i>
                                     Actualiser
