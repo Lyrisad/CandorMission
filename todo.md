@@ -1,1 +1,0 @@
-Dans la gestion de faq mettre "visible dans une bulle verte pour que cela soit plus jolie"

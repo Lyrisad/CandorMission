@@ -20,7 +20,7 @@ body {
 
 /* Hero Section */
 .contact-hero {
-    height: 97vh;
+    height: 100vh;
     position: relative;
     display: flex;
     align-items: center;

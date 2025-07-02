@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualités - Candor Ma Mission</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="actus.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Bangers&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-brand">
+                <a href="index.html" style="text-decoration: none; color: inherit;">
+                    <div class="brand-logo">
+                        <img src="images/Logos/Boussole EAM.png" alt="Logo Boussole EAM" class="header-logo">
+                        <h1>Candor Ma Mission</h1>
+                    </div>
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html#accueil" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="actus.html" class="nav-link active">Actualités</a>
+                </li>
+                <li class="nav-item">
+                    <a href="faq.html" class="nav-link">FAQ</a>
+                </li>
+                <li class="nav-item">
+                    <a href="presentation.html" class="nav-link">Présentation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </li>
+                <li class="nav-item">
+                    <a href="admin.html" class="nav-link">Admin</a>
+                </li>
+            </ul>
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-background"></div>
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">📰 Actualités</h1>
+                <p class="hero-subtitle">Restez informé des dernières nouvelles et mises à jour de Candor Ma Mission</p>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalArticles">--</span>
+                        <span class="stat-label">Articles</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" id="latestUpdate">--</span>
+                        <span class="stat-label">Dernière mise à jour</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- News Section -->
+    <section class="news-section">
+        <div class="container">
+            <!-- Search and Filter Bar -->
+            <div class="news-controls">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="newsSearchInput" placeholder="Rechercher dans les articles...">
+                    <button class="clear-search-btn" id="clearSearchBtn" style="display: none;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="filter-container">
+                    <select id="sortSelect" class="sort-select">
+                        <option value="newest">Plus récents</option>
+                        <option value="oldest">Plus anciens</option>
+                        <option value="title">Par titre</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search Results Info -->
+            <div class="search-results" id="searchResults" style="display: none;">
+                <span id="searchResultsText">0 résultat trouvé</span>
+                <button class="clear-all-btn" id="clearAllBtn">
+                    <i class="fas fa-times"></i>
+                    Effacer la recherche
+                </button>
+            </div>
+
+            <!-- Loading State -->
+            <div class="news-loading" id="newsLoading">
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                </div>
+                <p>Chargement des actualités...</p>
+            </div>
+
+            <!-- Articles Grid -->
+            <div class="articles-grid" id="articlesGrid" style="display: none;">
+                <!-- Articles will be loaded here -->
+            </div>
+
+            <!-- Empty State -->
+            <div class="news-empty" id="newsEmpty" style="display: none;">
+                <div class="empty-icon">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <h3>Aucun article disponible</h3>
+                <p>Il n'y a pas encore d'articles publiés. Revenez bientôt !</p>
+            </div>
+
+            <!-- No Search Results -->
+            <div class="no-results" id="noResults" style="display: none;">
+                <div class="no-results-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Aucun résultat trouvé</h3>
+                <p>Aucun article ne correspond à votre recherche.</p>
+                <button class="clear-search-btn-large" id="clearSearchBtnLarge">
+                    <i class="fas fa-times"></i>
+                    Effacer la recherche
+                </button>
+            </div>
+
+            <!-- Load More Button -->
+            <div class="load-more-container" id="loadMoreContainer" style="display: none;">
+                <button class="load-more-btn" id="loadMoreBtn">
+                    <i class="fas fa-plus"></i>
+                    Charger plus d'articles
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Article Modal -->
+    <div id="articleModal" class="article-modal">
+        <div class="article-modal-content">
+            <div class="article-modal-header">
+                <button class="close-modal-btn" id="closeArticleModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="article-modal-body" id="articleModalBody">
+                <!-- Article content will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3>Candor Ma Mission</h3>
+                    <p>Transformez votre vision en réalité</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Liens rapides</h4>
+                    <ul>
+                        <li><a href="index.html#accueil">Accueil</a></li>
+                        <li><a href="actus.html">Actualités</a></li>
+                        <li><a href="faq.html">FAQ</a></li>
+                        <li><a href="presentation.html">Présentation</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="admin.html">Admin</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Suivez-nous</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Site crée par Daryl pour Candor Ma Mission. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+    <script src="actus.js"></script>
+</body>
+</html> 

@@ -26,6 +26,9 @@
                     <a href="index.html#accueil" class="nav-link">Accueil</a>
                 </li>
                 <li class="nav-item">
+                    <a href="actus.html" class="nav-link">Actualités</a>
+                </li>
+                <li class="nav-item">
                     <a href="faq.html" class="nav-link">FAQ</a>
                 </li>
                 <li class="nav-item">
@@ -192,11 +195,44 @@
                         
                         <div class="admin-card">
                             <div class="card-icon">
+                                <i class="fas fa-newspaper"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3>📰 Actualités</h3>
+                                <p>Créez et modifiez les articles d'actualités du Groupe Candor</p>
+                                
+                                <!-- News Stats Placeholder -->
+                                <div class="news-stats" id="newsStatsPlaceholder">
+                                    <div class="stats-container">
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Articles</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">Publiés</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="card-btn" id="manageNewsBtn">
+                                    <i class="fas fa-arrow-right"></i>
+                                    Accéder
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card stats-card">
+                            <div class="card-icon">
                                 <i class="fas fa-chart-bar"></i>
                             </div>
                             <div class="card-content">
                                 <h3>📊 Statistiques</h3>
-                                <p>Consultez les statistiques du site et des performances</p>
+                                <p>Consultez en détail toutes les statistiques du site, suivez l'évolution du trafic, analysez les performances, comparez les périodes et accédez à des rapports avancés pour optimiser votre activité et prendre les meilleures décisions stratégiques pour le Groupe Candor.</p>
                                 <button class="card-btn">
                                     <i class="fas fa-arrow-right"></i>
                                     Accéder
@@ -386,6 +422,61 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- News Management Section -->
+                    <div class="news-management-section" id="newsManagementSection" style="display: none;">
+                        <div class="news-management-header">
+                            <h2>📰 Gestion des Actualités</h2>
+                            <div class="news-management-actions">
+                                <button class="refresh-news-btn" id="refreshNewsBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Actualiser
+                                </button>
+                                <button class="back-to-dashboard-btn" id="backToDashboardFromNewsBtn">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Retour au Panel
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="news-management">
+                            <div class="news-header">
+                                <h3>📋 Gestion des Articles</h3>
+                                <button class="add-article-btn" id="addArticleBtn">
+                                    <i class="fas fa-plus"></i>
+                                    Nouvel Article
+                                </button>
+                            </div>
+
+                            <!-- News Search -->
+                            <div class="news-search">
+                                <div class="search-container">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="newsSearchInput" placeholder="Rechercher un article (titre, contenu...)">
+                                    <button class="clear-search-btn" id="clearNewsSearchBtn" style="display: none;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="search-results" id="newsSearchResults" style="display: none;">
+                                    <span id="newsSearchResultsText">0 résultat trouvé</span>
+                                </div>
+                            </div>
+
+                            <div class="news-loading" id="newsLoading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Chargement des articles...
+                            </div>
+
+                            <div class="news-list" id="newsList">
+                                <!-- Articles will be loaded here -->
+                            </div>
+
+                            <div class="news-empty" id="newsEmpty" style="display: none;">
+                                <i class="fas fa-newspaper"></i>
+                                <p>Aucun article créé</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -499,6 +590,51 @@
                         Annuler
                     </button>
                     <button class="btn btn-primary" id="saveQuestionBtn">
+                        <i class="fas fa-save"></i>
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Article Modal -->
+        <div id="articleModal" class="modal">
+            <div class="modal-content article-modal-content">
+                <div class="modal-header">
+                    <h2 id="articleModalTitle">📰 Nouvel Article</h2>
+                    <button class="close-btn" id="closeArticleModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="articleForm">
+                        <div class="form-group">
+                            <label for="articleTitle">Titre de l'article *</label>
+                            <input type="text" id="articleTitle" name="articleTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="articleContent">Contenu de l'article *</label>
+                            <textarea id="articleContent" name="articleContent" rows="8" required placeholder="Rédigez le contenu de votre article..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="articleImageUrl">URL de l'image</label>
+                            <input type="url" id="articleImageUrl" name="articleImageUrl" placeholder="https://example.com/image.jpg">
+                            <small class="form-help">Laissez vide si vous n'avez pas d'image</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="articleVisible" name="articleVisible" checked>
+                                Visible sur le site
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelArticleBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-primary" id="saveArticleBtn">
                         <i class="fas fa-save"></i>
                         Enregistrer
                     </button>
@@ -749,6 +885,55 @@
                 </div>
             </div>
         </div>
+
+        <!-- Delete Article Confirmation Modal -->
+        <div id="deleteArticleModal" class="modal">
+            <div class="modal-content delete-modal-content">
+                <div class="modal-header delete-header">
+                    <div class="delete-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>🗑️ Supprimer l'article</h2>
+                    <button class="close-btn" id="closeDeleteArticleModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="delete-warning">
+                        <p class="delete-message">
+                            Êtes-vous sûr de vouloir supprimer cet article ?
+                        </p>
+                        <div class="delete-article-preview">
+                            <div class="article-preview-header">
+                                <i class="fas fa-newspaper"></i>
+                                <span>Article :</span>
+                            </div>
+                            <div class="article-preview-text" id="deleteArticleText"></div>
+                        </div>
+                        <div class="delete-details">
+                            <div class="delete-detail-item">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Cette action est <strong>irréversible</strong></span>
+                            </div>
+                            <div class="delete-detail-item">
+                                <i class="fas fa-info-circle"></i>
+                                <span>L'article et son contenu seront définitivement supprimés</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelDeleteArticleBtn">
+                        <i class="fas fa-times"></i>
+                        Annuler
+                    </button>
+                    <button class="btn btn-danger" id="confirmDeleteArticleBtn">
+                        <i class="fas fa-trash"></i>
+                        Supprimer définitivement
+                    </button>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- Footer -->
@@ -763,6 +948,7 @@
                     <h4>Liens rapides</h4>
                     <ul>
                         <li><a href="index.html#accueil">Accueil</a></li>
+                        <li><a href="actus.html">Actualités</a></li>
                         <li><a href="faq.html">FAQ</a></li>
                         <li><a href="presentation.html">Présentation</a></li>
                         <li><a href="contact.html">Contact</a></li>

@@ -236,6 +236,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load FAQ statistics
         loadFAQStats();
         
+        // Load news statistics
+        loadNewsStats();
+        
         // Load logs
         loadLogs();
     }
@@ -1383,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (badge) {
                 badge.innerHTML = `<i class="fas fa-question-circle"></i> ${questionCount}`;
             }
-        });
+            });
     }
     
     // Render Categories
@@ -1621,7 +1624,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const warningMessage = document.querySelector('.delete-message');
         if (questionCount > 0) {
             warningMessage.innerHTML = `Êtes-vous sûr de vouloir supprimer la catégorie <strong>${category.nom}</strong> ?<br><br><span style="color: #dc2626; font-weight: 600;">⚠️ Attention : ${questionCount} question${questionCount > 1 ? 's' : ''} seront également supprimée${questionCount > 1 ? 's' : ''} !</span>`;
-        } else {
+                    } else {
             warningMessage.innerHTML = `Êtes-vous sûr de vouloir supprimer la catégorie <strong>${category.nom}</strong> ?`;
         }
         
@@ -1927,15 +1930,15 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDeleteQuestionBtn.disabled = true;
         confirmDeleteQuestionBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
         
-        const url = `${GOOGLE_SCRIPT_URL}?action=deleteFAQ&id=${questionId}`;
-        
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccessToast('Question supprimée avec succès');
+            const url = `${GOOGLE_SCRIPT_URL}?action=deleteFAQ&id=${questionId}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccessToast('Question supprimée avec succès');
                     closeDeleteQuestionModal();
-                    loadQuestions();
+                        loadQuestions();
                     loadFAQStats(); // Reload FAQ stats
                     
                     // Update question counts after a short delay
@@ -1943,22 +1946,22 @@ document.addEventListener('DOMContentLoaded', function() {
                         updateQuestionCounts();
                     }, 500);
                     
-                    // Add log for question deletion
+                        // Add log for question deletion
                     const logAction = `Question supprimée: ${questionText.substring(0, 50)}${questionText.length > 50 ? '...' : ''}`;
-                    sendLogWithIP(logAction);
-                } else {
-                    showErrorToast('Erreur lors de la suppression');
-                }
-            })
-            .catch(error => {
-                console.error('Error deleting question:', error);
-                showErrorToast('Erreur de connexion');
+                        sendLogWithIP(logAction);
+                    } else {
+                        showErrorToast('Erreur lors de la suppression');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting question:', error);
+                    showErrorToast('Erreur de connexion');
             })
             .finally(() => {
                 // Reset button state
                 confirmDeleteQuestionBtn.disabled = false;
                 confirmDeleteQuestionBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer définitivement';
-            });
+                });
     }
     
     // Helper function to send logs with IP
@@ -2657,4 +2660,694 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmDeleteCategoryBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer définitivement';
             });
     }
+    
+    // ===== NEWS MANAGEMENT FUNCTIONALITY =====
+    
+    // News Management Elements
+    const manageNewsBtn = document.getElementById('manageNewsBtn');
+    const newsManagementSection = document.getElementById('newsManagementSection');
+    const backToDashboardFromNewsBtn = document.getElementById('backToDashboardFromNewsBtn');
+    const refreshNewsBtn = document.getElementById('refreshNewsBtn');
+    
+    // News Elements
+    const addArticleBtn = document.getElementById('addArticleBtn');
+    const newsLoading = document.getElementById('newsLoading');
+    const newsList = document.getElementById('newsList');
+    const newsEmpty = document.getElementById('newsEmpty');
+    
+    // News Search Elements
+    const newsSearchInput = document.getElementById('newsSearchInput');
+    const clearNewsSearchBtn = document.getElementById('clearNewsSearchBtn');
+    const newsSearchResults = document.getElementById('newsSearchResults');
+    const newsSearchResultsText = document.getElementById('newsSearchResultsText');
+    
+    // Article Modal Elements
+    const articleModal = document.getElementById('articleModal');
+    const closeArticleModalBtn = document.getElementById('closeArticleModalBtn');
+    const articleForm = document.getElementById('articleForm');
+    const saveArticleBtn = document.getElementById('saveArticleBtn');
+    const cancelArticleBtn = document.getElementById('cancelArticleBtn');
+    
+    // Delete Article Confirmation Modal Elements
+    const deleteArticleModal = document.getElementById('deleteArticleModal');
+    const closeDeleteArticleModalBtn = document.getElementById('closeDeleteArticleModalBtn');
+    const cancelDeleteArticleBtn = document.getElementById('cancelDeleteArticleBtn');
+    const confirmDeleteArticleBtn = document.getElementById('confirmDeleteArticleBtn');
+    const deleteArticleText = document.getElementById('deleteArticleText');
+    
+    // Delete confirmation state
+    let articleToDelete = null;
+    
+    // News State
+    let newsArticles = [];
+    let filteredArticles = [];
+    let currentEditingArticle = null;
+    let currentNewsSearchTerm = '';
+    
+    // News Event Listeners
+    if (manageNewsBtn) {
+        manageNewsBtn.addEventListener('click', showNewsManagement);
+    }
+    
+    if (backToDashboardFromNewsBtn) {
+        backToDashboardFromNewsBtn.addEventListener('click', returnToDashboardFromNews);
+    }
+    
+    if (refreshNewsBtn) {
+        refreshNewsBtn.addEventListener('click', refreshNewsData);
+    }
+    
+    // Article management
+    if (addArticleBtn) {
+        addArticleBtn.addEventListener('click', () => openArticleModal());
+    }
+    
+    if (saveArticleBtn) {
+        saveArticleBtn.addEventListener('click', saveArticle);
+    }
+    
+    if (cancelArticleBtn || closeArticleModalBtn) {
+        [cancelArticleBtn, closeArticleModalBtn].forEach(btn => {
+            if (btn) btn.addEventListener('click', closeArticleModal);
+        });
+    }
+    
+    // News search
+    if (newsSearchInput) {
+        newsSearchInput.addEventListener('input', handleNewsSearch);
+        newsSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleNewsSearch();
+            }
+        });
+    }
+    
+    if (clearNewsSearchBtn) {
+        clearNewsSearchBtn.addEventListener('click', clearNewsSearch);
+    }
+    
+    // Close modals when clicking outside
+    if (articleModal) {
+        articleModal.addEventListener('click', function(e) {
+            if (e.target === articleModal) {
+                closeArticleModal();
+            }
+        });
+    }
+    
+    // Delete confirmation modal event listeners
+    if (closeDeleteArticleModalBtn) {
+        closeDeleteArticleModalBtn.addEventListener('click', closeDeleteArticleModal);
+    }
+    
+    if (cancelDeleteArticleBtn) {
+        cancelDeleteArticleBtn.addEventListener('click', closeDeleteArticleModal);
+    }
+    
+    if (confirmDeleteArticleBtn) {
+        confirmDeleteArticleBtn.addEventListener('click', performDeleteArticle);
+    }
+    
+    // Close delete modal when clicking outside
+    if (deleteArticleModal) {
+        deleteArticleModal.addEventListener('click', function(e) {
+            if (e.target === deleteArticleModal) {
+                closeDeleteArticleModal();
+            }
+        });
+    }
+    
+    // Show News Management
+    function showNewsManagement() {
+        dashboardCards.style.display = 'none';
+        logsSection.style.display = 'none';
+        faqManagementSection.style.display = 'none';
+        newsManagementSection.style.display = 'block';
+        
+        // Load news data
+        loadNewsManagementData();
+    }
+    
+    // Return to Dashboard from News Management
+    function returnToDashboardFromNews() {
+        newsManagementSection.style.display = 'none';
+        dashboardCards.style.display = 'grid';
+        logsSection.style.display = 'block';
+        
+        // Add entrance animation
+        dashboardContainer.style.opacity = '0';
+        dashboardContainer.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            dashboardContainer.style.transition = 'all 0.5s ease';
+            dashboardContainer.style.opacity = '1';
+            dashboardContainer.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Load News Management Data
+    function loadNewsManagementData() {
+        loadArticles();
+    }
+    
+    // Load Articles
+    function loadArticles() {
+        showNewsLoading();
+        
+        const url = `${GOOGLE_SCRIPT_URL}?action=readArticles`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                hideNewsLoading();
+                if (data.success && data.values) {
+                    newsArticles = data.values;
+                    filteredArticles = [...newsArticles]; // Initialize filtered articles
+                    renderArticles();
+                    updateNewsSearchResults();
+                    
+                    // Update news stats
+                    loadNewsStats();
+                } else {
+                    newsArticles = [];
+                    filteredArticles = [];
+                    showNewsEmpty();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading articles:', error);
+                hideNewsLoading();
+                newsArticles = [];
+                filteredArticles = [];
+                showNewsEmpty();
+            });
+    }
+    
+    // Render Articles
+    function renderArticles() {
+        if (filteredArticles.length === 0) {
+            if (newsArticles.length === 0) {
+                showNewsEmpty();
+            } else {
+                // Show "no results" message when search yields no results
+                newsList.innerHTML = `
+                    <div class="no-search-results">
+                        <i class="fas fa-search"></i>
+                        <p>Aucun article ne correspond à votre recherche</p>
+                    </div>
+                `;
+                newsList.style.display = 'block';
+                newsEmpty.style.display = 'none';
+            }
+            return;
+        }
+        
+        newsList.innerHTML = '';
+        
+        filteredArticles.forEach(article => {
+            const articleElement = createArticleElement(article);
+            newsList.appendChild(articleElement);
+        });
+        
+        newsList.style.display = 'block';
+        newsEmpty.style.display = 'none';
+    }
+    
+    // Create Article Element
+    function createArticleElement(article) {
+        const element = document.createElement('div');
+        element.className = 'article-item';
+        
+        // Format content preview (first 150 characters)
+        const contentPreview = article.contenu ? 
+            (article.contenu.length > 150 ? article.contenu.substring(0, 150) + '...' : article.contenu) : 
+            'Aucun contenu';
+        
+        element.innerHTML = `
+            <div class="article-header">
+                <div class="article-info">
+                    <div class="article-title">${escapeHtml(article.titre)}</div>
+                    <div class="article-content">${escapeHtml(contentPreview)}</div>
+                    <div class="article-meta">
+                        <span>Créé le: ${formatDate(article.cree_le)}</span>
+                        ${article.modifie_le ? `<span>Modifié le: ${formatDate(article.modifie_le)}</span>` : ''}
+                        ${article.image_url ? `<span><i class="fas fa-image"></i> Avec image</span>` : ''}
+                        <span class="visibility-status ${article.visible ? 'visible' : 'hidden'}">
+                            ${article.visible ? 'Visible' : 'Masqué'}
+                        </span>
+                    </div>
+                </div>
+                <div class="article-actions">
+                    <button class="article-action-btn edit-article-btn" data-article-id="${article.id}" title="Modifier">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="article-action-btn toggle-visibility-btn ${article.visible ? 'visible' : ''}" data-article-id="${article.id}" title="${article.visible ? 'Masquer' : 'Afficher'}">
+                        <i class="fas fa-eye${article.visible ? '' : '-slash'}"></i>
+                    </button>
+                    <button class="article-action-btn delete-article-btn" data-article-id="${article.id}" title="Supprimer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Add event listeners
+        const editBtn = element.querySelector('.edit-article-btn');
+        const toggleBtn = element.querySelector('.toggle-visibility-btn');
+        const deleteBtn = element.querySelector('.delete-article-btn');
+        
+        editBtn.addEventListener('click', () => editArticle(article.id));
+        toggleBtn.addEventListener('click', () => toggleArticleVisibility(article.id));
+        deleteBtn.addEventListener('click', () => deleteArticle(article.id));
+        
+        return element;
+    }
+    
+    // Article Modal Functions
+    function openArticleModal(articleId = null) {
+        currentEditingArticle = articleId;
+        
+        if (articleId) {
+            const article = newsArticles.find(a => a.id === articleId);
+            if (article) {
+                document.getElementById('articleModalTitle').textContent = '📰 Modifier l\'Article';
+                document.getElementById('articleTitle').value = article.titre;
+                document.getElementById('articleContent').value = article.contenu || '';
+                document.getElementById('articleImageUrl').value = article.image_url || '';
+                document.getElementById('articleVisible').checked = article.visible;
+            }
+        } else {
+            document.getElementById('articleModalTitle').textContent = '📰 Nouvel Article';
+            articleForm.reset();
+            document.getElementById('articleVisible').checked = true;
+        }
+        
+        articleModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeArticleModal() {
+        articleModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        currentEditingArticle = null;
+        articleForm.reset();
+    }
+    
+    function saveArticle() {
+        const formData = new FormData(articleForm);
+        const articleData = {
+            titre: formData.get('articleTitle'),
+            contenu: formData.get('articleContent'),
+            image_url: formData.get('articleImageUrl') || '',
+            visible: formData.get('articleVisible') === 'on'
+        };
+        
+        // Validation
+        if (!articleData.titre.trim()) {
+            showErrorToast('Le titre de l\'article est requis');
+            return;
+        }
+        
+        if (!articleData.contenu.trim()) {
+            showErrorToast('Le contenu de l\'article est requis');
+            return;
+        }
+        
+        const action = currentEditingArticle ? 'updateArticle' : 'addArticle';
+        const url = `${GOOGLE_SCRIPT_URL}?action=${action}${currentEditingArticle ? `&id=${currentEditingArticle}` : ''}&titre=${encodeURIComponent(articleData.titre)}&contenu=${encodeURIComponent(articleData.contenu)}&image_url=${encodeURIComponent(articleData.image_url)}&visible=${articleData.visible}`;
+        
+        saveArticleBtn.disabled = true;
+        saveArticleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessToast(currentEditingArticle ? 'Article modifié avec succès' : 'Article créé avec succès');
+                    closeArticleModal();
+                    loadArticles();
+                    loadNewsStats(); // Reload news stats
+                    
+                    // Add log for article action
+                    const logAction = `Article ${currentEditingArticle ? 'modifié' : 'créé'}: ${articleData.titre.substring(0, 50)}${articleData.titre.length > 50 ? '...' : ''}`;
+                    sendLogWithIP(logAction);
+                } else {
+                    showErrorToast('Erreur lors de l\'enregistrement: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error saving article:', error);
+                showErrorToast('Erreur de connexion');
+            })
+            .finally(() => {
+                saveArticleBtn.disabled = false;
+                saveArticleBtn.innerHTML = '<i class="fas fa-save"></i> Enregistrer';
+            });
+    }
+    
+    // Article Action Functions
+    function editArticle(articleId) {
+        openArticleModal(articleId);
+    }
+    
+    function toggleArticleVisibility(articleId) {
+        const article = newsArticles.find(a => a.id === articleId);
+        if (!article) return;
+        
+        const newVisibility = !article.visible;
+        
+        // Preserve all existing article data when only changing visibility
+        const url = `${GOOGLE_SCRIPT_URL}?action=updateArticle&id=${articleId}&titre=${encodeURIComponent(article.titre)}&contenu=${encodeURIComponent(article.contenu || '')}&image_url=${encodeURIComponent(article.image_url || '')}&visible=${newVisibility}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessToast(`Article ${newVisibility ? 'affiché' : 'masqué'}`);
+                    loadArticles();
+                    
+                    // Add log for visibility toggle
+                    const logAction = `Article ${newVisibility ? 'affiché' : 'masqué'}: ${article.titre.substring(0, 50)}${article.titre.length > 50 ? '...' : ''}`;
+                    sendLogWithIP(logAction);
+                } else {
+                    showErrorToast('Erreur lors de la modification');
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling article visibility:', error);
+                showErrorToast('Erreur de connexion');
+            });
+    }
+    
+    function deleteArticle(articleId) {
+        const article = newsArticles.find(a => a.id === articleId);
+        if (!article) return;
+        
+        // Store article to delete and show confirmation modal
+        articleToDelete = article;
+        
+        // Update modal content
+        deleteArticleText.textContent = article.titre;
+        
+        // Show modal
+        deleteArticleModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Delete modal functions
+    function closeDeleteArticleModal() {
+        deleteArticleModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        articleToDelete = null;
+    }
+    
+    function performDeleteArticle() {
+        if (!articleToDelete) return;
+        
+        const articleId = articleToDelete.id;
+        const articleTitle = articleToDelete.titre;
+        
+        // Show loading state
+        confirmDeleteArticleBtn.disabled = true;
+        confirmDeleteArticleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Suppression...';
+        
+        const url = `${GOOGLE_SCRIPT_URL}?action=deleteArticle&id=${articleId}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccessToast('Article supprimé avec succès');
+                    closeDeleteArticleModal();
+                    loadArticles();
+                    loadNewsStats(); // Reload news stats
+                    
+                    // Add log for article deletion
+                    const logAction = `Article supprimé: ${articleTitle.substring(0, 50)}${articleTitle.length > 50 ? '...' : ''}`;
+                    sendLogWithIP(logAction);
+                } else {
+                    showErrorToast('Erreur lors de la suppression');
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting article:', error);
+                showErrorToast('Erreur de connexion');
+            })
+            .finally(() => {
+                // Reset button state
+                confirmDeleteArticleBtn.disabled = false;
+                confirmDeleteArticleBtn.innerHTML = '<i class="fas fa-trash"></i> Supprimer définitivement';
+            });
+    }
+    
+    // Loading and Empty States for News
+    function showNewsLoading() {
+        newsLoading.style.display = 'block';
+        newsList.style.display = 'none';
+        newsEmpty.style.display = 'none';
+    }
+    
+    function hideNewsLoading() {
+        newsLoading.style.display = 'none';
+    }
+    
+    function showNewsEmpty() {
+        newsList.style.display = 'none';
+        newsEmpty.style.display = 'block';
+    }
+    
+    // Handle News Search
+    function handleNewsSearch() {
+        const searchTerm = newsSearchInput.value.trim().toLowerCase();
+        currentNewsSearchTerm = searchTerm;
+        
+        if (searchTerm === '') {
+            filteredArticles = [...newsArticles];
+            clearNewsSearchBtn.style.display = 'none';
+        } else {
+            filteredArticles = newsArticles.filter(article => {
+                return article.titre.toLowerCase().includes(searchTerm) ||
+                       (article.contenu && article.contenu.toLowerCase().includes(searchTerm)) ||
+                       article.id.toString().toLowerCase().includes(searchTerm);
+            });
+            clearNewsSearchBtn.style.display = 'block';
+        }
+        
+        renderArticles();
+        updateNewsSearchResults();
+    }
+    
+    // Clear News Search
+    function clearNewsSearch() {
+        newsSearchInput.value = '';
+        currentNewsSearchTerm = '';
+        filteredArticles = [...newsArticles];
+        clearNewsSearchBtn.style.display = 'none';
+        renderArticles();
+        updateNewsSearchResults();
+        newsSearchInput.focus();
+    }
+    
+    // Update News Search Results
+    function updateNewsSearchResults() {
+        const searchTerm = newsSearchInput.value.trim();
+        
+        if (searchTerm && searchTerm !== '') {
+            const resultCount = filteredArticles.length;
+            newsSearchResultsText.textContent = `${resultCount} résultat${resultCount !== 1 ? 's' : ''} trouvé${resultCount !== 1 ? 's' : ''}`;
+            newsSearchResults.style.display = 'block';
+        } else {
+            newsSearchResults.style.display = 'none';
+        }
+    }
+    
+    // Load News Statistics
+    function loadNewsStats() {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getNewsStats`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.stats) {
+                    const stats = data.stats;
+                    
+                    // Update news card with statistics
+                    const newsCard = document.querySelector('.admin-card:nth-child(3)');
+                    if (newsCard) {
+                        const cardContent = newsCard.querySelector('.card-content');
+                        const existingStats = cardContent.querySelector('.news-stats');
+                        const placeholder = cardContent.querySelector('#newsStatsPlaceholder');
+                        
+                        // Create stats element
+                        const statsElement = document.createElement('div');
+                        statsElement.className = 'news-stats';
+                        statsElement.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.totalArticles}</span>
+                                    <span class="stat-label">Articles</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">${stats.visibleArticles}</span>
+                                    <span class="stat-label">Publiés</span>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // If placeholder exists, replace it with animation
+                        if (placeholder) {
+                            // Add fade out animation to placeholder
+                            placeholder.style.transition = 'all 0.5s ease';
+                            placeholder.style.opacity = '0';
+                            placeholder.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                // Replace placeholder with real stats
+                                placeholder.replaceWith(statsElement);
+                                
+                                // Add fade in animation to new stats
+                                statsElement.style.opacity = '0';
+                                statsElement.style.transform = 'scale(0.95)';
+                                
+                                setTimeout(() => {
+                                    statsElement.style.transition = 'all 0.5s ease';
+                                    statsElement.style.opacity = '1';
+                                    statsElement.style.transform = 'scale(1)';
+                                }, 50);
+                            }, 500);
+                        } else {
+                            // Remove existing stats if any
+                            if (existingStats) {
+                                existingStats.remove();
+                            }
+                            
+                            // Insert stats before the button
+                            const cardBtn = cardContent.querySelector('.card-btn');
+                            if (cardBtn) {
+                                cardContent.insertBefore(statsElement, cardBtn);
+                            } else {
+                                cardContent.appendChild(statsElement);
+                            }
+                            
+                            // Add fade in animation
+                            statsElement.style.opacity = '0';
+                            statsElement.style.transform = 'scale(0.95)';
+                            
+                            setTimeout(() => {
+                                statsElement.style.transition = 'all 0.5s ease';
+                                statsElement.style.opacity = '1';
+                                statsElement.style.transform = 'scale(1)';
+                            }, 50);
+                        }
+                    }
+                } else {
+                    // If no data, show error state in placeholder
+                    const placeholder = document.querySelector('#newsStatsPlaceholder');
+                    if (placeholder) {
+                        placeholder.innerHTML = `
+                            <div class="stats-container">
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Articles</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number">--</span>
+                                    <span class="stat-label">Publiés</span>
+                                </div>
+                            </div>
+                        `;
+                        placeholder.style.animation = 'none';
+                        placeholder.style.opacity = '0.6';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading news stats:', error);
+                
+                // Show error state in placeholder
+                const placeholder = document.querySelector('#newsStatsPlaceholder');
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="stats-container">
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Articles</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">--</span>
+                                <span class="stat-label">Publiés</span>
+                            </div>
+                        </div>
+                    `;
+                    placeholder.style.animation = 'none';
+                    placeholder.style.opacity = '0.6';
+                }
+            });
+    }
+    
+    // Reset News Stats Placeholder
+    function resetNewsStatsPlaceholder() {
+        const newsCard = document.querySelector('.admin-card:nth-child(3)');
+        if (newsCard) {
+            const cardContent = newsCard.querySelector('.card-content');
+            const existingStats = cardContent.querySelector('.news-stats');
+            const placeholder = cardContent.querySelector('#newsStatsPlaceholder');
+            
+            // Remove existing stats if any
+            if (existingStats && !existingStats.id) {
+                existingStats.remove();
+            }
+            
+            // Reset placeholder if it exists
+            if (placeholder) {
+                placeholder.innerHTML = `
+                    <div class="stats-container">
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Articles</span>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-loading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <span class="stat-label">Publiés</span>
+                        </div>
+                    </div>
+                `;
+                placeholder.style.animation = 'pulse 2s ease-in-out infinite';
+                placeholder.style.opacity = '0.8';
+                placeholder.style.transform = 'scale(1)';
+            }
+        }
+    }
+    
+    // Refresh News Data
+    function refreshNewsData() {
+        // Show loading animation on refresh button
+        const refreshBtn = document.getElementById('refreshNewsBtn');
+        const originalText = refreshBtn.innerHTML;
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+        refreshBtn.disabled = true;
+        
+        // Reset placeholder first
+        resetNewsStatsPlaceholder();
+        
+        // Refresh articles
+        loadArticles();
+        
+        // Refresh news stats
+        loadNewsStats();
+        
+        // Reset button after 2 seconds
+        setTimeout(() => {
+            refreshBtn.innerHTML = originalText;
+            refreshBtn.disabled = false;
+            showSuccessToast('📰 Données actualités actualisées avec succès !');
+        }, 2000);
+    }
+
+    // ===== EMOJI SELECTOR FUNCTIONALITY =====
 }); 

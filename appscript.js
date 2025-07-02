@@ -7,6 +7,15 @@ const SHEET_NAME = "Messages";
 const COLUMNS = ["ID", "NAME", "EMAIL", "PHONE", "MESSAGE", "READ", "DATE"];
 
 /**
+ * Génère un ID unique pour les articles
+ */
+function generateId() {
+  var timestamp = new Date().getTime();
+  var random = Math.floor(Math.random() * 1000);
+  return "ART_" + timestamp + "_" + random;
+}
+
+/**
  * Fonction principale pour traiter les soumissions de formulaire
  * Cette fonction sera appelée via une requête GET
  */
@@ -818,6 +827,179 @@ function doGet(e) {
         if (!found) result.error = "FAQ non trouvée";
       }
       
+    } else if (action == "readArticles") {
+      // Lecture de tous les articles
+      var articlesSheet = ss.getSheetByName("Articles");
+      if (!articlesSheet) {
+        result.success = false;
+        result.error = "Feuille 'Articles' non trouvée";
+      } else {
+        var data = articlesSheet.getDataRange().getValues();
+        if (data.length <= 1) {
+          result.success = true;
+          result.values = [];
+        } else {
+          var articles = [];
+          for (var i = 1; i < data.length; i++) {
+            var row = data[i];
+            var article = {
+              id: row[0],
+              titre: row[1],
+              contenu: row[2],
+              image_url: row[3] || '',
+              cree_le: row[4],
+              modifie_le: row[5] || '',
+              visible: row[6] === true || row[6] === 'TRUE'
+            };
+            articles.push(article);
+          }
+          result.success = true;
+          result.values = articles;
+        }
+      }
+    } else if (action == "addArticle") {
+      // Ajouter un nouvel article
+      var articlesSheet = ss.getSheetByName("Articles");
+      var titre = e.parameter.titre;
+      var contenu = e.parameter.contenu;
+      var image_url = e.parameter.image_url || '';
+      var visible = e.parameter.visible === 'true';
+      
+      if (!articlesSheet) {
+        result.success = false;
+        result.error = "Feuille 'Articles' non trouvée";
+      } else if (!titre || !contenu) {
+        result.success = false;
+        result.error = "Le titre et le contenu de l'article sont requis";
+      } else {
+        var now = new Date();
+        var id = generateId();
+        
+        var newRow = [
+          id,
+          titre,
+          contenu,
+          image_url,
+          now,
+          '', // modifie_le (empty for new articles)
+          visible === 'true' || visible === true
+        ];
+        
+        articlesSheet.appendRow(newRow);
+        
+        // Add log
+        addAutomaticLog(`Article créé: ${titre}`, 'admin');
+        
+        result.success = true;
+        result.id = id;
+        result.message = "Article créé avec succès";
+      }
+    } else if (action == "updateArticle") {
+      // Mettre à jour un article
+      var articlesSheet = ss.getSheetByName("Articles");
+      var id = e.parameter.id;
+      var titre = e.parameter.titre;
+      var contenu = e.parameter.contenu;
+      var image_url = e.parameter.image_url;
+      var visible = e.parameter.visible;
+      
+      if (!articlesSheet) {
+        result.success = false;
+        result.error = "Feuille 'Articles' non trouvée";
+      } else if (!id) {
+        result.success = false;
+        result.error = "ID de l'article manquant";
+      } else {
+        var data = articlesSheet.getDataRange().getValues();
+        var found = false;
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] == id) {
+            var now = new Date();
+            
+            // Update only the fields that are provided (not undefined)
+            if (titre !== undefined && titre !== null) articlesSheet.getRange(i + 1, 2).setValue(titre);
+            if (contenu !== undefined && contenu !== null) articlesSheet.getRange(i + 1, 3).setValue(contenu);
+            if (image_url !== undefined && image_url !== null) articlesSheet.getRange(i + 1, 4).setValue(image_url);
+            if (visible !== undefined && visible !== null) articlesSheet.getRange(i + 1, 7).setValue(visible === 'true' || visible === true);
+            
+            // Update modification date
+            articlesSheet.getRange(i + 1, 6).setValue(now);
+            
+            // Add log
+            var oldTitre = data[i][1];
+            addAutomaticLog(`Article modifié: ${oldTitre}`, 'admin');
+            
+            found = true;
+            break;
+          }
+        }
+        
+        result.success = found;
+        if (!found) result.error = "Article non trouvé";
+      }
+    } else if (action == "deleteArticle") {
+      // Supprimer un article
+      var articlesSheet = ss.getSheetByName("Articles");
+      var id = e.parameter.id;
+      
+      if (!articlesSheet) {
+        result.success = false;
+        result.error = "Feuille 'Articles' non trouvée";
+      } else if (!id) {
+        result.success = false;
+        result.error = "ID de l'article manquant";
+      } else {
+        var data = articlesSheet.getDataRange().getValues();
+        var found = false;
+        var articleTitre = '';
+        
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] == id) {
+            articleTitre = data[i][1];
+            articlesSheet.deleteRow(i + 1);
+            found = true;
+            break;
+          }
+        }
+        
+        // Add log
+        if (found) {
+          addAutomaticLog(`Article supprimé: ${articleTitre}`, 'admin');
+        }
+        
+        result.success = found;
+        if (!found) result.error = "Article non trouvé";
+      }
+    } else if (action == "getNewsStats") {
+      // Récupérer les statistiques des articles
+      var articlesSheet = ss.getSheetByName("Articles");
+      if (!articlesSheet) {
+        result.success = false;
+        result.error = "Feuille 'Articles' non trouvée";
+      } else {
+        var data = articlesSheet.getDataRange().getValues();
+        if (data.length <= 1) {
+          result.success = true;
+          result.stats = { totalArticles: 0, visibleArticles: 0 };
+        } else {
+          var totalArticles = 0;
+          var visibleArticles = 0;
+          
+          for (var i = 1; i < data.length; i++) {
+            totalArticles++;
+            if (data[i][6] === true || data[i][6] === 'TRUE') {
+              visibleArticles++;
+            }
+          }
+          
+          result.success = true;
+          result.stats = {
+            totalArticles: totalArticles,
+            visibleArticles: visibleArticles
+          };
+        }
+      }
     } else {
       // Action par défaut pour la compatibilité avec l'ancien système
       if (e.parameter.name && e.parameter.email && e.parameter.message) {
