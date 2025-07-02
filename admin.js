@@ -2547,9 +2547,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const guildTabBtns = document.querySelectorAll('.guild-tab-btn');
     const inboxTutorial = document.getElementById('inboxTutorial');
     const faqTutorial = document.getElementById('faqTutorial');
+    const newsTutorial = document.getElementById('newsTutorial');
     const guildTabContents = {
         inbox: inboxTutorial,
-        faq: faqTutorial
+        faq: faqTutorial,
+        news: newsTutorial
     };
 
     if (guildBtn && guildModal) {
