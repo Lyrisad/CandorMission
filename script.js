@@ -91,24 +91,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentPage = window.location.pathname.split('/').pop() || 'index.html';
     const navLinks = document.querySelectorAll('.nav-link');
     
+    // Helper function to normalize page names (remove .html extension)
+    function normalizePageName(pageName) {
+        return pageName.replace('.html', '');
+    }
+    
+    // Helper function to normalize href (remove .html extension)
+    function normalizeHref(href) {
+        return href.replace('.html', '');
+    }
+    
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         
         // Remove all active classes first
         link.classList.remove('active');
         
+        // Normalize current page and href for comparison
+        const normalizedCurrentPage = normalizePageName(currentPage);
+        const normalizedHref = normalizeHref(href);
+        
         // Set active based on current page
-        if ((currentPage === 'index.html' || currentPage === '') && (href === 'index.html#accueil' || href === '#accueil')) {
+        if ((normalizedCurrentPage === 'index' || normalizedCurrentPage === '') && (normalizedHref === 'index#accueil' || normalizedHref === '#accueil')) {
             // Homepage should activate the "Accueil" link (handles both href="#accueil" and href="index.html#accueil")
             link.classList.add('active');
-        } else if (currentPage === 'faq.html' && href === 'faq.html' || href === 'faq') {
+        } else if (normalizedCurrentPage === 'faq' && normalizedHref === 'faq') {
             link.classList.add('active');
-        } else if (currentPage === 'presentation.html' && href === 'presentation.html') {
+        } else if (normalizedCurrentPage === 'presentation' && normalizedHref === 'presentation') {
             link.classList.add('active');
-        } else if (currentPage === 'contact.html' && href === 'contact.html') {
+        } else if (normalizedCurrentPage === 'contact' && normalizedHref === 'contact') {
             link.classList.add('active');
-        } else if ((currentPage === 'admin.html' || currentPage === 'inbox.html') && href === 'admin.html') {
-            // Both admin.html and inbox.html should highlight "Admin"
+        } else if ((normalizedCurrentPage === 'admin' || normalizedCurrentPage === 'inbox') && normalizedHref === 'admin') {
+            // Both admin and inbox should highlight "Admin"
             link.classList.add('active');
         }
     });
@@ -116,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Debug information
     console.log('🔍 Navigation Debug:', {
         currentPage: currentPage,
+        normalizedCurrentPage: normalizePageName(currentPage),
         activeLinks: document.querySelectorAll('.nav-link.active').length
     });
 });
