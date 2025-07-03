@@ -4226,7 +4226,7 @@ body {
     left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
     width: 90%;
-    max-width: 1200px !important;
+    max-width: 800px !important;
     max-height: 90vh;
     background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     border-radius: 20px;
