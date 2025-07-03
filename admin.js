@@ -239,6 +239,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Load news statistics
         loadNewsStats();
         
+        // Load overall statistics for stats card
+        loadOverallStats();
+        
         // Load logs
         loadLogs();
     }
@@ -390,6 +393,92 @@ document.addEventListener('DOMContentLoaded', function() {
                     placeholder.style.opacity = '0.6';
                 }
             });
+    }
+    
+    // Load overall statistics for stats card
+    function loadOverallStats() {
+        console.log('📊 Chargement des statistiques générales...');
+        
+        // Load all statistics in parallel
+        Promise.all([
+            fetchVisitorStats(),
+            fetchFAQClickStats(), 
+            fetchPresentationClickStats(),
+            fetchArticleClickStats()
+        ])
+        .then(([visitorStats, faqStats, presentationStats, articleStats]) => {
+            // Update stats card with real data
+            updateStatsCard({
+                totalVisitors: visitorStats.totalVisitors || 0,
+                totalFAQClicks: faqStats.totalClicks || 0,
+                totalPresentationClicks: presentationStats.totalClicks || 0,
+                totalArticleClicks: articleStats.totalClicks || 0
+            });
+        })
+        .catch(error => {
+            console.error('❌ Erreur chargement statistiques générales:', error);
+            // Show error state
+            updateStatsCard({
+                totalVisitors: '--',
+                totalFAQClicks: '--',
+                totalPresentationClicks: '--',
+                totalArticleClicks: '--'
+            });
+        });
+    }
+    
+    // Fetch visitor statistics
+    function fetchVisitorStats() {
+        return fetch(`${GOOGLE_SCRIPT_URL}?action=getVisitorStats`)
+            .then(response => response.json())
+            .then(data => data.success ? data.stats : {});
+    }
+    
+    // Fetch FAQ click statistics  
+    function fetchFAQClickStats() {
+        return fetch(`${GOOGLE_SCRIPT_URL}?action=getFAQClickStats`)
+            .then(response => response.json())
+            .then(data => data.success ? data.stats : {});
+    }
+    
+    // Fetch presentation click statistics
+    function fetchPresentationClickStats() {
+        return fetch(`${GOOGLE_SCRIPT_URL}?action=getPresentationClickStats`)
+            .then(response => response.json())
+            .then(data => data.success ? data.stats : {});
+    }
+    
+    // Fetch article click statistics
+    function fetchArticleClickStats() {
+        return fetch(`${GOOGLE_SCRIPT_URL}?action=getArticleStats`)
+            .then(response => response.json())
+            .then(data => data.success ? data.stats : {});
+    }
+    
+    // Update stats card with data
+    function updateStatsCard(stats) {
+        const placeholder = document.querySelector('#statsOverviewPlaceholder');
+        if (!placeholder) return;
+        
+        // Update each stat item
+        const statItems = [
+            { elementId: 'totalVisitorsCard', value: stats.totalVisitors, label: '👥 Visites' },
+            { elementId: 'totalFAQClicksCard', value: stats.totalFAQClicks, label: '❓ FAQ' },
+            { elementId: 'totalPresentationClicksCard', value: stats.totalPresentationClicks, label: '👤 Présentation' },
+            { elementId: 'totalArticleClicksCard', value: stats.totalArticleClicks, label: '📰 Actualités' }
+        ];
+        
+        statItems.forEach(item => {
+            const element = document.getElementById(item.elementId);
+            if (element) {
+                // Replace loading spinner with actual number
+                element.innerHTML = `<span class="stat-number">${item.value}</span>`;
+                element.classList.remove('stat-loading');
+                element.classList.add('stat-loaded');
+            }
+        });
+        
+        console.log('✅ Statistiques générales mises à jour:', stats);
     }
     
     // Animate counter
@@ -1587,11 +1676,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!category) return;
         
         const newVisibility = !category.visible;
+        const progressMessage = newVisibility ? 'Affichage en cours...' : 'Masquage en cours...';
+        const progressToast = showProgressToast(progressMessage);
+        
         const url = `${GOOGLE_SCRIPT_URL}?action=updateCategory&id=${categoryId}&visible=${newVisibility}`;
         
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                hideProgressToast(progressToast);
                 if (data.success) {
                     showSuccessToast(`Catégorie ${newVisibility ? 'affichée' : 'masquée'}`);
                     loadCategories();
@@ -1604,6 +1697,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error toggling category visibility:', error);
+                hideProgressToast(progressToast);
                 showErrorToast('Erreur de connexion');
             });
     }
@@ -1871,11 +1965,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!question) return;
         
         const newVisibility = !question.visible;
+        const progressMessage = newVisibility ? 'Affichage en cours...' : 'Masquage en cours...';
+        const progressToast = showProgressToast(progressMessage);
+        
         const url = `${GOOGLE_SCRIPT_URL}?action=updateFAQ&id=${questionId}&visible=${newVisibility}`;
         
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                hideProgressToast(progressToast);
                 if (data.success) {
                     showSuccessToast(`Question ${newVisibility ? 'affichée' : 'masquée'}`);
                     loadQuestions();
@@ -1894,6 +1992,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error toggling question visibility:', error);
+                hideProgressToast(progressToast);
                 showErrorToast('Erreur de connexion');
             });
     }
@@ -3018,6 +3117,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!article) return;
         
         const newVisibility = !article.visible;
+        const progressMessage = newVisibility ? 'Affichage en cours...' : 'Masquage en cours...';
+        const progressToast = showProgressToast(progressMessage);
         
         // Preserve all existing article data when only changing visibility
         const url = `${GOOGLE_SCRIPT_URL}?action=updateArticle&id=${articleId}&titre=${encodeURIComponent(article.titre)}&contenu=${encodeURIComponent(article.contenu || '')}&image_url=${encodeURIComponent(article.image_url || '')}&visible=${newVisibility}`;
@@ -3025,6 +3126,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(url)
             .then(response => response.json())
             .then(data => {
+                hideProgressToast(progressToast);
                 if (data.success) {
                     showSuccessToast(`Article ${newVisibility ? 'affiché' : 'masqué'}`);
                     loadArticles();
@@ -3038,6 +3140,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error toggling article visibility:', error);
+                hideProgressToast(progressToast);
                 showErrorToast('Erreur de connexion');
             });
     }
@@ -3351,5 +3454,479 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
 
-    // ===== EMOJI SELECTOR FUNCTIONALITY =====
+    // ==============================================
+    // STATISTICS SECTION
+    // ==============================================
+    
+    // DOM Elements for Statistics
+    const manageStatsBtn = document.getElementById('manageStatsBtn');
+    const statisticsSection = document.getElementById('statisticsSection');
+    const backToDashboardFromStatsBtn = document.getElementById('backToDashboardFromStatsBtn');
+    const refreshStatsBtn = document.getElementById('refreshStatsBtn');
+    
+    // Statistics Event Listeners
+    if (manageStatsBtn) {
+        manageStatsBtn.addEventListener('click', showStatistics);
+    }
+    
+    if (backToDashboardFromStatsBtn) {
+        backToDashboardFromStatsBtn.addEventListener('click', returnToDashboardFromStats);
+    }
+    
+    if (refreshStatsBtn) {
+        refreshStatsBtn.addEventListener('click', refreshStatistics);
+    }
+    
+    // Show Statistics Section
+    function showStatistics() {
+        dashboardCards.style.display = 'none';
+        logsSection.style.display = 'none';
+        faqManagementSection.style.display = 'none';
+        newsManagementSection.style.display = 'none';
+        statisticsSection.style.display = 'block';
+        
+        // Load all statistics data
+        loadStatisticsData();
+    }
+    
+    // Return to Dashboard from Statistics
+    function returnToDashboardFromStats() {
+        statisticsSection.style.display = 'none';
+        dashboardCards.style.display = 'grid';
+        logsSection.style.display = 'block';
+        
+        // Add entrance animation
+        dashboardContainer.style.opacity = '0';
+        dashboardContainer.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            dashboardContainer.style.transition = 'all 0.5s ease';
+            dashboardContainer.style.opacity = '1';
+            dashboardContainer.style.transform = 'translateY(0)';
+        }, 100);
+    }
+    
+    // Refresh All Statistics
+    function refreshStatistics() {
+        showSuccessToast('Actualisation des statistiques...');
+        loadStatisticsData();
+    }
+    
+    // Load All Statistics Data
+    function loadStatisticsData() {
+        console.log('🔄 Chargement des statistiques...');
+        
+        // Load all statistics in parallel
+        Promise.all([
+            loadVisitorStatistics(),
+            loadFAQStatistics(),
+            loadPresentationStatistics(),
+            loadContactStatistics(),
+            loadArticleStatistics()
+        ]).then(() => {
+            console.log('✅ Toutes les statistiques chargées');
+            updateLastUpdateTimes();
+        }).catch(error => {
+            console.error('❌ Erreur lors du chargement des statistiques:', error);
+            showErrorToast('Erreur lors du chargement des statistiques');
+        });
+    }
+    
+    // Load Visitor Statistics
+    function loadVisitorStatistics() {
+        return new Promise((resolve, reject) => {
+            console.log('📊 Chargement des statistiques visiteurs...');
+            const visitorsLoading = document.getElementById('visitorsLoading');
+            const visitorsTableContainer = document.getElementById('visitorsTableContainer');
+            const visitorsEmpty = document.getElementById('visitorsEmpty');
+            const visitorsTableBody = document.getElementById('visitorsTableBody');
+            const totalVisitorsElement = document.getElementById('totalVisitors');
+            
+            // Show loading
+            visitorsLoading.style.display = 'block';
+            visitorsTableContainer.style.display = 'none';
+            visitorsEmpty.style.display = 'none';
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getVisitorStats`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    visitorsLoading.style.display = 'none';
+                    
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        
+                        // Update overview number
+                        totalVisitorsElement.textContent = stats.totalVisitors || 0;
+                        
+                        // Show detailed data directly in one go
+                        if (stats.dailyData && stats.dailyData.length > 0) {
+                            visitorsTableBody.innerHTML = '';
+                            stats.dailyData.forEach(day => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${escapeHtml(day.date)}</td>
+                                    <td><strong>${day.visitors}</strong></td>
+                                `;
+                                visitorsTableBody.appendChild(row);
+                            });
+                            visitorsTableContainer.style.display = 'block';
+                        } else {
+                            visitorsEmpty.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Statistiques visiteurs chargées:', stats);
+                        resolve(stats);
+                    } else {
+                        totalVisitorsElement.textContent = '0';
+                        visitorsEmpty.style.display = 'block';
+                        console.log('ℹ️ Aucune donnée visiteur disponible');
+                        resolve({});
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erreur visiteurs:', error);
+                    visitorsLoading.style.display = 'none';
+                    visitorsEmpty.style.display = 'block';
+                    totalVisitorsElement.textContent = 'Erreur';
+                    reject(error);
+                });
+        });
+    }
+    
+    // Load FAQ Statistics
+    function loadFAQStatistics() {
+        return new Promise((resolve, reject) => {
+            console.log('📊 Chargement des statistiques FAQ...');
+            const faqStatsLoading = document.getElementById('faqStatsLoading');
+            const faqStatsTableContainer = document.getElementById('faqStatsTableContainer');
+            const faqStatsEmpty = document.getElementById('faqStatsEmpty');
+            const faqStatsTableBody = document.getElementById('faqStatsTableBody');
+            const totalFAQClicksElement = document.getElementById('totalFAQClicks');
+            
+            // Show loading
+            faqStatsLoading.style.display = 'block';
+            faqStatsTableContainer.style.display = 'none';
+            faqStatsEmpty.style.display = 'none';
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getFAQClickStats`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    faqStatsLoading.style.display = 'none';
+                    
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        
+                        // Update overview number
+                        totalFAQClicksElement.textContent = stats.totalClicks || 0;
+                        
+                        // Render table data
+                        if (stats.questions && stats.questions.length > 0) {
+                            faqStatsTableBody.innerHTML = '';
+                            stats.questions.forEach(question => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${escapeHtml(question.question_id)}</td>
+                                    <td>${escapeHtml(question.question)}</td>
+                                    <td><strong>${question.clicks}</strong></td>
+                                `;
+                                faqStatsTableBody.appendChild(row);
+                            });
+                            faqStatsTableContainer.style.display = 'block';
+                        } else {
+                            faqStatsEmpty.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Statistiques FAQ chargées:', stats);
+                        resolve(stats);
+                    } else {
+                        totalFAQClicksElement.textContent = '0';
+                        faqStatsEmpty.style.display = 'block';
+                        console.log('ℹ️ Aucune donnée FAQ disponible');
+                        resolve({});
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erreur FAQ:', error);
+                    faqStatsLoading.style.display = 'none';
+                    faqStatsEmpty.style.display = 'block';
+                    totalFAQClicksElement.textContent = 'Erreur';
+                    reject(error);
+                });
+        });
+    }
+    
+    // Load Presentation Statistics
+    function loadPresentationStatistics() {
+        return new Promise((resolve, reject) => {
+            console.log('📊 Chargement des statistiques présentation...');
+            const presentationStatsLoading = document.getElementById('presentationStatsLoading');
+            const presentationStatsTableContainer = document.getElementById('presentationStatsTableContainer');
+            const presentationStatsEmpty = document.getElementById('presentationStatsEmpty');
+            const presentationStatsTableBody = document.getElementById('presentationStatsTableBody');
+            const totalPresentationClicksElement = document.getElementById('totalPresentationClicks');
+            
+            // Show loading
+            presentationStatsLoading.style.display = 'block';
+            presentationStatsTableContainer.style.display = 'none';
+            presentationStatsEmpty.style.display = 'none';
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getPresentationClickStats`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    presentationStatsLoading.style.display = 'none';
+                    
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        
+                        // Update overview number
+                        totalPresentationClicksElement.textContent = stats.totalClicks || 0;
+                        
+                        // Render table data
+                        if (stats.cards && stats.cards.length > 0) {
+                            presentationStatsTableBody.innerHTML = '';
+                            stats.cards.forEach(card => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${escapeHtml(card.card_nom)}</td>
+                                    <td><strong>${card.clicks}</strong></td>
+                                `;
+                                presentationStatsTableBody.appendChild(row);
+                            });
+                            presentationStatsTableContainer.style.display = 'block';
+                        } else {
+                            presentationStatsEmpty.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Statistiques présentation chargées:', stats);
+                        resolve(stats);
+                    } else {
+                        totalPresentationClicksElement.textContent = '0';
+                        presentationStatsEmpty.style.display = 'block';
+                        console.log('ℹ️ Aucune donnée présentation disponible');
+                        resolve({});
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erreur présentation:', error);
+                    presentationStatsLoading.style.display = 'none';
+                    presentationStatsEmpty.style.display = 'block';
+                    totalPresentationClicksElement.textContent = 'Erreur';
+                    reject(error);
+                });
+        });
+    }
+    
+    // Load Contact Statistics
+    function loadContactStatistics() {
+        return new Promise((resolve, reject) => {
+            console.log('📊 Chargement des statistiques contact...');
+            const contactStatsLoading = document.getElementById('contactStatsLoading');
+            const contactStatsTableContainer = document.getElementById('contactStatsTableContainer');
+            const contactStatsEmpty = document.getElementById('contactStatsEmpty');
+            const contactStatsTableBody = document.getElementById('contactStatsTableBody');
+            const totalContactSubmissionsElement = document.getElementById('totalContactSubmissions');
+            
+            // Show loading
+            contactStatsLoading.style.display = 'block';
+            contactStatsTableContainer.style.display = 'none';
+            contactStatsEmpty.style.display = 'none';
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getContactStats`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    contactStatsLoading.style.display = 'none';
+                    
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        
+                        // Update overview number
+                        totalContactSubmissionsElement.textContent = stats.totalSubmissions || 0;
+                        
+                        // Show detailed contact data
+                        if (stats.dailyData && stats.dailyData.length > 0) {
+                            contactStatsTableBody.innerHTML = '';
+                            stats.dailyData.forEach(day => {
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${escapeHtml(day.date)}</td>
+                                    <td><strong>${day.submissions}</strong></td>
+                                `;
+                                contactStatsTableBody.appendChild(row);
+                            });
+                            contactStatsTableContainer.style.display = 'block';
+                        } else {
+                            contactStatsEmpty.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Statistiques contact chargées:', stats);
+                        resolve(stats);
+                    } else {
+                        totalContactSubmissionsElement.textContent = '0';
+                        contactStatsEmpty.style.display = 'block';
+                        console.log('ℹ️ Aucune donnée contact disponible');
+                        resolve({});
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erreur contact:', error);
+                    contactStatsLoading.style.display = 'none';
+                    contactStatsEmpty.style.display = 'block';
+                    totalContactSubmissionsElement.textContent = 'Erreur';
+                    reject(error);
+                });
+        });
+    }
+    
+    // Load Article Statistics
+    function loadArticleStatistics() {
+        return new Promise((resolve, reject) => {
+            console.log('📊 Chargement des statistiques articles...');
+            const articlesStatsLoading = document.getElementById('articlesStatsLoading');
+            const articlesStatsTableContainer = document.getElementById('articlesStatsTableContainer');
+            const articlesStatsEmpty = document.getElementById('articlesStatsEmpty');
+            const articlesStatsTableBody = document.getElementById('articlesStatsTableBody');
+            const totalArticleClicksElement = document.getElementById('totalArticleClicks');
+            
+            // Show loading
+            articlesStatsLoading.style.display = 'block';
+            articlesStatsTableContainer.style.display = 'none';
+            articlesStatsEmpty.style.display = 'none';
+            
+            const url = `${GOOGLE_SCRIPT_URL}?action=getArticleStats`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    articlesStatsLoading.style.display = 'none';
+                    
+                    if (data.success && data.stats) {
+                        const stats = data.stats;
+                        
+                        // Update overview number
+                        totalArticleClicksElement.textContent = stats.totalClicks || 0;
+                        
+                        // Render table data
+                        if (stats.articles && stats.articles.length > 0) {
+                            articlesStatsTableBody.innerHTML = '';
+                            stats.articles.forEach(article => {
+                                const avgTime = article.temps_moyen || 0;
+                                const formattedAvgTime = formatTime(avgTime);
+                                const formattedTotalTime = formatTime(article.temps_cumule || 0);
+                                
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${escapeHtml(article.article_id)}</td>
+                                    <td>${escapeHtml(article.titre)}</td>
+                                    <td><strong>${article.clics}</strong></td>
+                                    <td>${formattedTotalTime}</td>
+                                    <td>${formattedAvgTime}</td>
+                                `;
+                                articlesStatsTableBody.appendChild(row);
+                            });
+                            articlesStatsTableContainer.style.display = 'block';
+                        } else {
+                            articlesStatsEmpty.style.display = 'block';
+                        }
+                        
+                        console.log('✅ Statistiques articles chargées:', stats);
+                        resolve(stats);
+                    } else {
+                        totalArticleClicksElement.textContent = '0';
+                        articlesStatsEmpty.style.display = 'block';
+                        console.log('ℹ️ Aucune donnée article disponible');
+                        resolve({});
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Erreur articles:', error);
+                    articlesStatsLoading.style.display = 'none';
+                    articlesStatsEmpty.style.display = 'block';
+                    totalArticleClicksElement.textContent = 'Erreur';
+                    reject(error);
+                });
+        });
+    }
+    
+    // Format time in seconds to human readable format
+    function formatTime(seconds) {
+        if (!seconds || seconds === 0) return '0s';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        if (hours > 0) {
+            return `${hours}h ${minutes}m ${secs}s`;
+        } else if (minutes > 0) {
+            return `${minutes}m ${secs}s`;
+        } else {
+            return `${secs}s`;
+        }
+    }
+    
+    // Update last update times
+    function updateLastUpdateTimes() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('fr-FR');
+        const dateString = now.toLocaleDateString('fr-FR');
+        const fullString = `${dateString} à ${timeString}`;
+        
+        // Update all last update elements
+        const updateElements = [
+            'visitorsLastUpdate',
+            'faqLastUpdate', 
+            'presentationLastUpdate',
+            'contactLastUpdate',
+            'articlesLastUpdate'
+        ];
+        
+        updateElements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = `Dernière mise à jour : ${fullString}`;
+            }
+        });
+    }
+
+    // Function to show "in progress" toast
+    function showProgressToast(message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast toast-progress';
+        toast.innerHTML = `
+            <div class="toast-content">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Show toast
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+        
+        // Return toast element so it can be hidden later
+        return toast;
+    }
+    
+    // Function to hide a specific toast
+    function hideProgressToast(toast) {
+        if (toast && toast.parentNode) {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
+    }
 }); 

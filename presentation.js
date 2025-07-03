@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Données des membres de l'équipe
     const teamMembers = {
-        'CC.gif': {
+        'David.gif': {
             name: 'KUSOSKY David',
             title: 'Captain CAMPUS',
             description: 'Maître du transfert de connaissance télépathique, Captain Campus forme les esprits à la vitesse de la pensée. Responsable d\'un centre de formation dans la propreté, il transmet son savoir avec précision, rendant chaque agent plus rapide, plus compétent, plus conscient des enjeux d\'hygiène. Grâce à lui, l\'excellence professionnelle devient instantanée.',
@@ -286,6 +286,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const gifName = gifSrc.split('/').pop();
         const memberData = teamMembers[gifName];
         
+        // Track presentation card click
+        trackPresentationClick(gifSrc);
+        
         if (memberData) {
             // Réinitialiser la transformation de la carte originale
             card.style.transform = 'translateY(0) rotateX(0deg) rotateY(0deg) translateZ(0px) scale(1)';
@@ -547,5 +550,29 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeModal() {
         modal.classList.remove('active');
         document.body.style.overflow = 'auto';
+    }
+    
+    // Track presentation card click
+    function trackPresentationClick(gifSrc) {
+        // Extract card name from gif source
+        // Example: "images/heros/BOSS.gif" -> "BOSS"
+        const pathParts = gifSrc.split('/');
+        const fileName = pathParts[pathParts.length - 1]; // "BOSS.gif"
+        const cardName = fileName.replace('.gif', '').replace('.png', ''); // "BOSS"
+        
+        // Create the URL with parameters
+        const url = `${GOOGLE_SCRIPT_URL}?action=trackPresentationClick&card_nom=${encodeURIComponent(cardName)}&timestamp=${Date.now()}`;
+        
+        // Send the tracking request using fetch with no-cors mode
+        fetch(url, {
+            method: 'GET',
+            mode: 'no-cors'
+        })
+        .then(() => {
+            console.log('Presentation card click tracked successfully:', cardName);
+        })
+        .catch(error => {
+            console.warn('Error tracking presentation card click:', error);
+        });
     }
 });

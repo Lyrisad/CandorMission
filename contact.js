@@ -89,6 +89,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Google Apps Script response data:', data);
                 
                 if (data.success) {
+                    // Track contact form submission
+                    trackContactSubmission();
+                    
                     hideLoading();
                     showThankYouModal();
                     contactForm.reset();
@@ -338,4 +341,22 @@ document.addEventListener('DOMContentLoaded', function() {
             hideThankYouModal();
         }
     });
+    
+    // Track contact form submission
+    function trackContactSubmission() {
+        // Create the URL with parameters
+        const url = `${GOOGLE_SCRIPT_URL}?action=trackContactSubmission&timestamp=${Date.now()}`;
+        
+        // Send the tracking request using fetch with no-cors mode
+        fetch(url, {
+            method: 'GET',
+            mode: 'no-cors'
+        })
+        .then(() => {
+            console.log('Contact submission tracked successfully');
+        })
+        .catch(error => {
+            console.warn('Error tracking contact submission:', error);
+        });
+    }
 }); 

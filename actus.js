@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let articlesPerPage = 6;
     let currentPage = 1;
     let isLoading = false;
+    
+    // Article tracking state
+    let currentArticle = null;
+    let articleStartTime = null;
+    let articleTimeSpent = 0;
 
     // Initialize
     loadArticles();
@@ -99,13 +104,18 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading();
         
         const url = `${GOOGLE_SCRIPT_URL}?action=readArticles`;
+        console.log('🔍 Chargement des articles depuis:', url);
         
         fetch(url)
             .then(response => response.json())
             .then(data => {
                 hideLoading();
+                console.log('📄 Réponse articles:', data);
                 if (data.success && data.values) {
+                    console.log('✅ Articles bruts récupérés:', data.values.length);
                     allArticles = data.values.filter(article => article.visible);
+                    console.log('✅ Articles visibles après filtrage:', allArticles.length);
+                    console.log('📝 Premier article exemple:', allArticles[0]);
                     filteredArticles = [...allArticles];
                     displayedArticles = [];
                     currentPage = 1;
@@ -114,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     renderArticles();
                     updateSearchResults();
                 } else {
+                    console.log('❌ Pas d\'articles ou erreur:', data);
                     allArticles = [];
                     filteredArticles = [];
                     displayedArticles = [];
@@ -121,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .catch(error => {
-                console.error('Error loading articles:', error);
+                console.error('❌ Error loading articles:', error);
                 hideLoading();
                 allArticles = [];
                 filteredArticles = [];
@@ -354,6 +365,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Open Article Modal
     function openArticleModal(article) {
+        // Store current article for tracking
+        currentArticle = article;
+        articleStartTime = Date.now();
+        articleTimeSpent = 0;
+        
+        // Debug: Log article info
+        console.log('Article ouvert:', article);
+        console.log('Article ID:', article.id);
+        console.log('Article titre:', article.titre);
+        
+        // Ne pas tracker à l'ouverture, attendre la fermeture pour un tracking complet
+        
         // Format date
         const articleDate = new Date(article.cree_le);
         const formattedDate = articleDate.toLocaleDateString('fr-FR', {
@@ -436,6 +459,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close Article Modal
     function closeArticleModal() {
+        // Calculate time spent if we have an article tracked
+        if (currentArticle && articleStartTime) {
+            const timeSpent = Math.round((Date.now() - articleStartTime) / 1000); // Convert to seconds
+            console.log('Fermeture article:', currentArticle.titre, 'Temps passé:', timeSpent + 's');
+            // Track even if 0 seconds (user opened the article)
+            trackArticleClick(currentArticle, Math.max(timeSpent, 1)); // Minimum 1 second
+        } else {
+            console.log('Pas d\'article à tracker à la fermeture');
+        }
+        
+        // Reset tracking variables
+        currentArticle = null;
+        articleStartTime = null;
+        articleTimeSpent = 0;
+        
         // Add closing animation
         articleModal.classList.add('closing');
         
@@ -635,6 +673,101 @@ document.addEventListener('DOMContentLoaded', function() {
         loadArticles();
     }
 
-    // Expose refresh function globally for potential use
+    // Track Article Click and Time
+    function trackArticleClick(article, timeSpent) {
+        console.log('🎯 trackArticleClick appelé avec:', { article, timeSpent });
+        
+        if (!article || !article.id) {
+            console.warn('❌ Article invalide pour le tracking:', article);
+            console.warn('❌ ID manquant, propriétés disponibles:', Object.keys(article || {}));
+            return;
+        }
+        
+        const url = `${GOOGLE_SCRIPT_URL}?action=trackArticleClick&article_id=${encodeURIComponent(article.id)}&titre=${encodeURIComponent(article.titre)}&temps_cumule=${timeSpent}`;
+        console.log('🌐 URL de tracking:', url);
+        
+        // Test mode: try without no-cors first to see response
+        fetch(url, {
+            method: 'GET'
+        })
+        .then(response => {
+            console.log('📡 Réponse tracking (status):', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('📊 Réponse tracking (data):', data);
+            if (data.success) {
+                console.log(`✅ Article tracking réussi: ${article.titre} (${timeSpent}s)`);
+            } else {
+                console.error('❌ Erreur tracking:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur lors du tracking article:', error);
+            console.log('🔄 Tentative avec no-cors...');
+            
+            // Fallback with no-cors
+            fetch(url, {
+                method: 'GET',
+                mode: 'no-cors'
+            })
+            .then(() => {
+                console.log(`🔄 Article tracking envoyé (no-cors): ${article.titre} (${timeSpent}s)`);
+            })
+            .catch(fallbackError => {
+                console.error('❌ Erreur même avec no-cors:', fallbackError);
+            });
+        });
+    }
+    
+    // Get Article Statistics (for potential future use)
+    function getArticleStats() {
+        const url = `${GOOGLE_SCRIPT_URL}?action=getArticleStats`;
+        
+        return fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Statistiques des articles:', data.stats);
+                    return data.stats;
+                } else {
+                    console.error('Erreur lors de la récupération des statistiques:', data.error);
+                    return null;
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des statistiques:', error);
+                return null;
+            });
+    }
+    
+    // Handle page visibility change to track time more accurately
+    document.addEventListener('visibilitychange', function() {
+        if (currentArticle && articleStartTime) {
+            if (document.hidden) {
+                // Page is hidden, pause tracking
+                const timeSpent = Math.round((Date.now() - articleStartTime) / 1000);
+                articleTimeSpent += timeSpent;
+                articleStartTime = null;
+            } else {
+                // Page is visible again, resume tracking
+                articleStartTime = Date.now();
+            }
+        }
+    });
+    
+    // Handle page unload to save time before leaving
+    window.addEventListener('beforeunload', function() {
+        if (currentArticle && articleStartTime) {
+            const timeSpent = Math.round((Date.now() - articleStartTime) / 1000);
+            const totalTime = Math.max(articleTimeSpent + timeSpent, 1); // Minimum 1 second
+            // Use navigator.sendBeacon for reliable tracking on page unload
+            const url = `${GOOGLE_SCRIPT_URL}?action=trackArticleClick&article_id=${encodeURIComponent(currentArticle.id)}&titre=${encodeURIComponent(currentArticle.titre)}&temps_cumule=${totalTime}`;
+            navigator.sendBeacon(url);
+        }
+    });
+    
+    // Expose functions globally for potential use
     window.refreshNewsArticles = refreshArticles;
+    window.getArticleStats = getArticleStats;
 }); 

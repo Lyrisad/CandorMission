@@ -1000,6 +1000,526 @@ function doGet(e) {
           };
         }
       }
+      
+    } else if (action == "trackVisitor") {
+      // Enregistrer une nouvelle visite
+      var visitorsSheet = ss.getSheetByName("visiteurs");
+      if (!visitorsSheet) {
+        result.success = false;
+        result.error = "Feuille 'visiteurs' non trouvée";
+      } else {
+        // Date d'aujourd'hui au format DD/MM/YYYY
+        var today = new Date();
+        var day = String(today.getDate()).padStart(2, '0');
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var year = today.getFullYear();
+        var todayString = day + '/' + month + '/' + year;
+        
+        var data = visitorsSheet.getDataRange().getValues();
+        var found = false;
+        var rowIndex = -1;
+        
+        // Chercher si une entrée existe déjà pour aujourd'hui
+        for (var i = 1; i < data.length; i++) {
+          var rowDate = data[i][0];
+          // Convertir la date en string si c'est un objet Date
+          if (rowDate instanceof Date) {
+            var rowDay = String(rowDate.getDate()).padStart(2, '0');
+            var rowMonth = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var rowYear = rowDate.getFullYear();
+            rowDate = rowDay + '/' + rowMonth + '/' + rowYear;
+          }
+          
+          if (rowDate === todayString) {
+            found = true;
+            rowIndex = i;
+            break;
+          }
+        }
+        
+        if (found) {
+          // Incrémenter le compteur existant
+          var currentCount = data[rowIndex][1] || 0;
+          visitorsSheet.getRange(rowIndex + 1, 2).setValue(currentCount + 1);
+          result.message = "Compteur de visiteurs incrémenté";
+        } else {
+          // Créer une nouvelle entrée pour aujourd'hui
+          visitorsSheet.appendRow([todayString, 1]);
+          result.message = "Nouvelle entrée visiteur créée";
+        }
+        
+        // Ajouter un log automatique
+        addAutomaticLog("Nouveau visiteur enregistré", "Page d'accueil");
+        
+        result.success = true;
+      }
+      
+    } else if (action == "getVisitorStats") {
+      // Récupérer les statistiques des visiteurs
+      var visitorsSheet = ss.getSheetByName("visiteurs");
+      if (!visitorsSheet) {
+        result.success = false;
+        result.error = "Feuille 'visiteurs' non trouvée";
+      } else {
+        var data = visitorsSheet.getDataRange().getValues();
+        var totalVisitors = 0;
+        var todayVisitors = 0;
+        
+        // Date d'aujourd'hui
+        var today = new Date();
+        var day = String(today.getDate()).padStart(2, '0');
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var year = today.getFullYear();
+        var todayString = day + '/' + month + '/' + year;
+        
+        // Calculer les statistiques
+        for (var i = 1; i < data.length; i++) {
+          var visitCount = data[i][1] || 0;
+          totalVisitors += visitCount;
+          
+          // Vérifier si c'est aujourd'hui
+          var rowDate = data[i][0];
+          if (rowDate instanceof Date) {
+            var rowDay = String(rowDate.getDate()).padStart(2, '0');
+            var rowMonth = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var rowYear = rowDate.getFullYear();
+            rowDate = rowDay + '/' + rowMonth + '/' + rowYear;
+          }
+          
+          if (rowDate === todayString) {
+            todayVisitors = visitCount;
+          }
+        }
+        
+        result.success = true;
+        result.stats = {
+          totalVisitors: totalVisitors,
+          todayVisitors: todayVisitors,
+          totalDays: data.length - 1, // Exclure l'en-tête
+          dailyData: [] // Données par jour
+        };
+        
+        // Ajouter les données par jour
+        for (var i = 1; i < data.length; i++) {
+          var rowDate = data[i][0];
+          var visitCount = data[i][1] || 0;
+          
+          // Formater la date
+          if (rowDate instanceof Date) {
+            var day = String(rowDate.getDate()).padStart(2, '0');
+            var month = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var year = rowDate.getFullYear();
+            rowDate = day + '/' + month + '/' + year;
+          }
+          
+          result.stats.dailyData.push({
+            date: rowDate,
+            visitors: visitCount
+          });
+        }
+        
+        // Trier par date (plus récent en premier)
+        result.stats.dailyData.sort(function(a, b) {
+          var dateA = new Date(a.date.split('/').reverse().join('-'));
+          var dateB = new Date(b.date.split('/').reverse().join('-'));
+          return dateB - dateA;
+        });
+      }
+      
+    } else if (action == "trackFAQClick") {
+      // Enregistrer un clic sur une question FAQ
+      var faqStatsSheet = ss.getSheetByName("FAQ_stats");
+      var questionId = e.parameter.question_id;
+      var questionText = e.parameter.question;
+      
+      if (!faqStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ_stats' non trouvée";
+      } else if (!questionId || !questionText) {
+        result.success = false;
+        result.error = "ID de question et texte de question requis";
+      } else {
+        var data = faqStatsSheet.getDataRange().getValues();
+        var found = false;
+        var rowIndex = -1;
+        
+        // Chercher si la question existe déjà
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === questionId) {
+            found = true;
+            rowIndex = i;
+            break;
+          }
+        }
+        
+        if (found) {
+          // Incrémenter le compteur de clics existant
+          var currentClicks = data[rowIndex][2] || 0;
+          faqStatsSheet.getRange(rowIndex + 1, 3).setValue(currentClicks + 1);
+          result.message = "Compteur de clics incrémenté";
+          result.clicks = currentClicks + 1;
+        } else {
+          // Créer une nouvelle entrée pour cette question
+          faqStatsSheet.appendRow([questionId, questionText, 1]);
+          result.message = "Nouvelle question ajoutée aux statistiques";
+          result.clicks = 1;
+        }
+        
+        // Ajouter un log automatique
+        addAutomaticLog("Question FAQ cliquée: " + questionId, "Page FAQ");
+        
+        result.success = true;
+        result.question_id = questionId;
+      }
+      
+    } else if (action == "getFAQClickStats") {
+      // Récupérer les statistiques de clics FAQ
+      var faqStatsSheet = ss.getSheetByName("FAQ_stats");
+      if (!faqStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'FAQ_stats' non trouvée";
+      } else {
+        var data = faqStatsSheet.getDataRange().getValues();
+        var totalClicks = 0;
+        var questionStats = [];
+        
+        // Calculer les statistiques
+        for (var i = 1; i < data.length; i++) {
+          var questionId = data[i][0];
+          var questionText = data[i][1];
+          var clicks = data[i][2] || 0;
+          
+          totalClicks += clicks;
+          questionStats.push({
+            question_id: questionId,
+            question: questionText,
+            clicks: clicks
+          });
+        }
+        
+        // Trier par nombre de clics (descendant)
+        questionStats.sort(function(a, b) {
+          return b.clicks - a.clicks;
+        });
+        
+        result.success = true;
+        result.stats = {
+          totalClicks: totalClicks,
+          totalQuestions: questionStats.length,
+          questions: questionStats
+        };
+      }
+      
+    } else if (action == "trackPresentationClick") {
+      // Enregistrer un clic sur une carte de présentation
+      var presentationStatsSheet = ss.getSheetByName("Presentation_Stats");
+      var cardName = e.parameter.card_nom;
+      
+      if (!presentationStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Presentation_Stats' non trouvée";
+      } else if (!cardName) {
+        result.success = false;
+        result.error = "Nom de la carte requis";
+      } else {
+        var data = presentationStatsSheet.getDataRange().getValues();
+        var found = false;
+        var rowIndex = -1;
+        
+        // Chercher si la carte existe déjà
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === cardName) {
+            found = true;
+            rowIndex = i;
+            break;
+          }
+        }
+        
+        if (found) {
+          // Incrémenter le compteur de clics existant
+          var currentClicks = data[rowIndex][1] || 0;
+          presentationStatsSheet.getRange(rowIndex + 1, 2).setValue(currentClicks + 1);
+          result.message = "Compteur de clics incrémenté";
+          result.clicks = currentClicks + 1;
+        } else {
+          // Créer une nouvelle entrée pour cette carte
+          presentationStatsSheet.appendRow([cardName, 1]);
+          result.message = "Nouvelle carte ajoutée aux statistiques";
+          result.clicks = 1;
+        }
+        
+        // Ajouter un log automatique
+        addAutomaticLog("Carte présentation cliquée: " + cardName, "Page présentation");
+        
+        result.success = true;
+        result.card_nom = cardName;
+      }
+      
+    } else if (action == "getPresentationClickStats") {
+      // Récupérer les statistiques de clics présentation
+      var presentationStatsSheet = ss.getSheetByName("Presentation_Stats");
+      if (!presentationStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Presentation_Stats' non trouvée";
+      } else {
+        var data = presentationStatsSheet.getDataRange().getValues();
+        var totalClicks = 0;
+        var cardStats = [];
+        
+        // Calculer les statistiques
+        for (var i = 1; i < data.length; i++) {
+          var cardName = data[i][0];
+          var clicks = data[i][1] || 0;
+          
+          totalClicks += clicks;
+          cardStats.push({
+            card_nom: cardName,
+            clicks: clicks
+          });
+        }
+        
+        // Trier par nombre de clics (descendant)
+        cardStats.sort(function(a, b) {
+          return b.clicks - a.clicks;
+        });
+        
+        result.success = true;
+        result.stats = {
+          totalClicks: totalClicks,
+          totalCards: cardStats.length,
+          cards: cardStats
+        };
+      }
+      
+    } else if (action == "trackContactSubmission") {
+      // Enregistrer un envoi de formulaire de contact
+      var contactStatsSheet = ss.getSheetByName("Contact_Stats");
+      if (!contactStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Contact_Stats' non trouvée";
+      } else {
+        // Date d'aujourd'hui au format DD/MM/YYYY
+        var today = new Date();
+        var day = String(today.getDate()).padStart(2, '0');
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var year = today.getFullYear();
+        var todayString = day + '/' + month + '/' + year;
+        
+        var data = contactStatsSheet.getDataRange().getValues();
+        var found = false;
+        var rowIndex = -1;
+        
+        // Chercher si une entrée existe déjà pour aujourd'hui
+        for (var i = 1; i < data.length; i++) {
+          var rowDate = data[i][0];
+          // Convertir la date en string si c'est un objet Date
+          if (rowDate instanceof Date) {
+            var rowDay = String(rowDate.getDate()).padStart(2, '0');
+            var rowMonth = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var rowYear = rowDate.getFullYear();
+            rowDate = rowDay + '/' + rowMonth + '/' + rowYear;
+          }
+          
+          if (rowDate === todayString) {
+            found = true;
+            rowIndex = i;
+            break;
+          }
+        }
+        
+        if (found) {
+          // Incrémenter le compteur existant
+          var currentCount = data[rowIndex][1] || 0;
+          contactStatsSheet.getRange(rowIndex + 1, 2).setValue(currentCount + 1);
+          result.message = "Compteur d'envois incrémenté";
+          result.count = currentCount + 1;
+        } else {
+          // Créer une nouvelle entrée pour aujourd'hui
+          contactStatsSheet.appendRow([todayString, 1]);
+          result.message = "Nouvelle entrée d'envoi créée";
+          result.count = 1;
+        }
+        
+        // Ajouter un log automatique
+        addAutomaticLog("Formulaire de contact envoyé", "Page contact");
+        
+        result.success = true;
+      }
+      
+    } else if (action == "getContactStats") {
+      // Récupérer les statistiques des envois de contact
+      var contactStatsSheet = ss.getSheetByName("Contact_Stats");
+      if (!contactStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Contact_Stats' non trouvée";
+      } else {
+        var data = contactStatsSheet.getDataRange().getValues();
+        var totalSubmissions = 0;
+        var todaySubmissions = 0;
+        
+        // Date d'aujourd'hui
+        var today = new Date();
+        var day = String(today.getDate()).padStart(2, '0');
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var year = today.getFullYear();
+        var todayString = day + '/' + month + '/' + year;
+        
+        // Calculer les statistiques
+        for (var i = 1; i < data.length; i++) {
+          var submissionCount = data[i][1] || 0;
+          totalSubmissions += submissionCount;
+          
+          // Vérifier si c'est aujourd'hui
+          var rowDate = data[i][0];
+          if (rowDate instanceof Date) {
+            var rowDay = String(rowDate.getDate()).padStart(2, '0');
+            var rowMonth = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var rowYear = rowDate.getFullYear();
+            rowDate = rowDay + '/' + rowMonth + '/' + rowYear;
+          }
+          
+          if (rowDate === todayString) {
+            todaySubmissions = submissionCount;
+          }
+        }
+        
+        result.success = true;
+        result.stats = {
+          totalSubmissions: totalSubmissions,
+          todaySubmissions: todaySubmissions,
+          totalDays: data.length - 1, // Exclure l'en-tête
+          dailyData: [] // Données par jour
+        };
+        
+        // Ajouter les données par jour
+        for (var i = 1; i < data.length; i++) {
+          var rowDate = data[i][0];
+          var submissionCount = data[i][1] || 0;
+          
+          // Formater la date
+          if (rowDate instanceof Date) {
+            var day = String(rowDate.getDate()).padStart(2, '0');
+            var month = String(rowDate.getMonth() + 1).padStart(2, '0');
+            var year = rowDate.getFullYear();
+            rowDate = day + '/' + month + '/' + year;
+          }
+          
+          result.stats.dailyData.push({
+            date: rowDate,
+            submissions: submissionCount
+          });
+        }
+        
+        // Trier par date (plus récent en premier)
+        result.stats.dailyData.sort(function(a, b) {
+          var dateA = new Date(a.date.split('/').reverse().join('-'));
+          var dateB = new Date(b.date.split('/').reverse().join('-'));
+          return dateB - dateA;
+        });
+      }
+      
+    } else if (action == "trackArticleClick") {
+      // Enregistrer un clic sur un article
+      var actusStatsSheet = ss.getSheetByName("Actus_Stats");
+      var articleId = e.parameter.article_id;
+      var articleTitle = e.parameter.titre;
+      var timeSpent = parseInt(e.parameter.temps_cumule) || 0;
+      
+      if (!actusStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Actus_Stats' non trouvée";
+      } else if (!articleId || !articleTitle) {
+        result.success = false;
+        result.error = "ID d'article et titre requis";
+      } else {
+        var data = actusStatsSheet.getDataRange().getValues();
+        var found = false;
+        var rowIndex = -1;
+        
+        // Chercher si l'article existe déjà
+        for (var i = 1; i < data.length; i++) {
+          if (data[i][0] === articleId) {
+            found = true;
+            rowIndex = i;
+            break;
+          }
+        }
+        
+        if (found) {
+          // Mettre à jour les données existantes
+          var currentClicks = data[rowIndex][2] || 0;
+          var currentTime = data[rowIndex][3] || 0;
+          
+          // Incrémenter les clics et ajouter le temps
+          actusStatsSheet.getRange(rowIndex + 1, 3).setValue(currentClicks + 1);
+          actusStatsSheet.getRange(rowIndex + 1, 4).setValue(currentTime + timeSpent);
+          
+          result.message = "Clic et temps enregistrés";
+          result.clicks = currentClicks + 1;
+          result.total_time = currentTime + timeSpent;
+        } else {
+          // Créer une nouvelle entrée pour cet article
+          actusStatsSheet.appendRow([articleId, articleTitle, 1, timeSpent]);
+          result.message = "Nouvel article ajouté aux statistiques";
+          result.clicks = 1;
+          result.total_time = timeSpent;
+        }
+        
+        // Ajouter un log automatique
+        addAutomaticLog("Article lu: " + articleTitle + " (temps: " + timeSpent + "s)", "Page actualités");
+        
+        result.success = true;
+        result.article_id = articleId;
+      }
+      
+    } else if (action == "getArticleStats") {
+      // Récupérer les statistiques des articles
+      var actusStatsSheet = ss.getSheetByName("Actus_Stats");
+      if (!actusStatsSheet) {
+        result.success = false;
+        result.error = "Feuille 'Actus_Stats' non trouvée";
+      } else {
+        var data = actusStatsSheet.getDataRange().getValues();
+        var totalClicks = 0;
+        var totalTime = 0;
+        var articleStats = [];
+        
+        // Calculer les statistiques
+        for (var i = 1; i < data.length; i++) {
+          var articleId = data[i][0];
+          var articleTitle = data[i][1];
+          var clicks = data[i][2] || 0;
+          var timeSpent = data[i][3] || 0;
+          
+          totalClicks += clicks;
+          totalTime += timeSpent;
+          
+          // Calculer le temps moyen par article
+          var avgTimePerView = clicks > 0 ? Math.round(timeSpent / clicks) : 0;
+          
+          articleStats.push({
+            article_id: articleId,
+            titre: articleTitle,
+            clics: clicks,
+            temps_cumule: timeSpent,
+            temps_moyen: avgTimePerView
+          });
+        }
+        
+        // Trier par nombre de clics (descendant)
+        articleStats.sort(function(a, b) {
+          return b.clics - a.clics;
+        });
+        
+        result.success = true;
+        result.stats = {
+          totalClicks: totalClicks,
+          totalTime: totalTime,
+          totalArticles: articleStats.length,
+          averageTime: totalClicks > 0 ? Math.round(totalTime / totalClicks) : 0,
+          articles: articleStats
+        };
+      }
     } else {
       // Action par défaut pour la compatibilité avec l'ancien système
       if (e.parameter.name && e.parameter.email && e.parameter.message) {
@@ -1161,6 +1681,16 @@ function testConfiguration() {
 // - readLogs: ?action=readLogs
 // - addLog: ?action=addLog&ip=IP_ADDRESS
 // - exportLogs: ?action=exportLogs
+// - trackVisitor: ?action=trackVisitor
+// - getVisitorStats: ?action=getVisitorStats
+// - trackFAQClick: ?action=trackFAQClick&question_id=FAQ_1&question=Question%20text
+// - getFAQClickStats: ?action=getFAQClickStats
+// - trackPresentationClick: ?action=trackPresentationClick&card_nom=BOSS
+// - getPresentationClickStats: ?action=getPresentationClickStats
+// - trackContactSubmission: ?action=trackContactSubmission
+// - getContactStats: ?action=getContactStats
+// - trackArticleClick: ?action=trackArticleClick&article_id=ART_123&titre=Mon%20Article&temps_cumule=45
+// - getArticleStats: ?action=getArticleStats
 //
 // Compatibilité: L'ancien format sans action fonctionne toujours
 // ?name=Nom&email=email@example.com&phone=0123456789&message=Message

@@ -295,7 +295,35 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isActive) {
             question.classList.add('active');
             answer.classList.add('active');
+            
+            // Track FAQ click
+            trackFAQClick(faqId, question);
         }
+    }
+    
+    // Track FAQ click
+    function trackFAQClick(faqId, questionElement) {
+        // Get the question text (remove highlighting if present)
+        const questionTextElement = questionElement.querySelector('.faq-question-text');
+        if (!questionTextElement) return;
+        
+        // Clean the question text by removing HTML tags and getting only the text content
+        const questionText = questionTextElement.textContent.trim();
+        
+        // Create the URL with parameters
+        const url = `${GOOGLE_SCRIPT_URL}?action=trackFAQClick&question_id=${encodeURIComponent(faqId)}&question=${encodeURIComponent(questionText)}&timestamp=${Date.now()}`;
+        
+        // Send the tracking request using fetch with no-cors mode
+        fetch(url, {
+            method: 'GET',
+            mode: 'no-cors'
+        })
+        .then(() => {
+            console.log('FAQ click tracked successfully:', faqId);
+        })
+        .catch(error => {
+            console.warn('Error tracking FAQ click:', error);
+        });
     }
     
     // Handle search

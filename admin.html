@@ -231,9 +231,40 @@
                                 <i class="fas fa-chart-bar"></i>
                             </div>
                             <div class="card-content">
-                                <h3>📊 Statistiques</h3>
+                                <h3><span class="emoji">📊</span> Statistiques</h3>
                                 <p>Consultez en détail toutes les statistiques du site, suivez l'évolution du trafic, analysez les performances, comparez les périodes et accédez à des rapports avancés pour optimiser votre activité et prendre les meilleures décisions stratégiques pour le Groupe Candor.</p>
-                                <button class="card-btn">
+                                
+                                <!-- Statistics Stats Placeholder -->
+                                <div class="stats-overview" id="statsOverviewPlaceholder">
+                                    <div class="stats-container">
+                                        <div class="stat-item">
+                                            <div class="stat-loading" id="totalVisitorsCard">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">👥 Visites</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading" id="totalFAQClicksCard">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">❓ FAQ</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading" id="totalPresentationClicksCard">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">👤 Présentation</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <div class="stat-loading" id="totalArticleClicksCard">
+                                                <i class="fas fa-spinner fa-spin"></i>
+                                            </div>
+                                            <span class="stat-label">📰 Actualités</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="card-btn" id="manageStatsBtn">
                                     <i class="fas fa-arrow-right"></i>
                                     Accéder
                                 </button>
@@ -474,6 +505,254 @@
                             <div class="news-empty" id="newsEmpty" style="display: none;">
                                 <i class="fas fa-newspaper"></i>
                                 <p>Aucun article créé</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Section -->
+                    <div class="statistics-section" id="statisticsSection" style="display: none;">
+                        <div class="statistics-header">
+                            <h2><span class="emoji">📊</span><span class="text">Statistiques du Site</span></h2>
+                            <div class="statistics-actions">
+                                <button class="refresh-stats-btn" id="refreshStatsBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Actualiser
+                                </button>
+                                <button class="back-to-dashboard-btn" id="backToDashboardFromStatsBtn">
+                                    <i class="fas fa-arrow-left"></i>
+                                    Retour au Panel
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="statistics-overview">
+                            <div class="stats-summary">
+                                <div class="stats-overview-card">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <h3>Visiteurs Total</h3>
+                                        <div class="overview-number" id="totalVisitors">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                        <p>Visiteurs uniques</p>
+                                    </div>
+                                </div>
+                                <div class="stats-overview-card">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-question-circle"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <h3>Questions FAQ</h3>
+                                        <div class="overview-number" id="totalFAQClicks">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                        <p>Clics total</p>
+                                    </div>
+                                </div>
+                                <div class="stats-overview-card">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-address-card"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <h3>Cartes Présentation</h3>
+                                        <div class="overview-number" id="totalPresentationClicks">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                        <p>Clics total</p>
+                                    </div>
+                                </div>
+                                <div class="stats-overview-card">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <h3>Messages Contact</h3>
+                                        <div class="overview-number" id="totalContactSubmissions">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                        <p>Envois total</p>
+                                    </div>
+                                </div>
+                                <div class="stats-overview-card">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-newspaper"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <h3>Articles Actualités</h3>
+                                        <div class="overview-number" id="totalArticleClicks">
+                                            <i class="fas fa-spinner fa-spin"></i>
+                                        </div>
+                                        <p>Clics total</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="statistics-details">
+                            <div class="stats-section-card">
+                                <div class="stats-section-header">
+                                    <h3><span class="emoji">👥</span><span class="text">Statistiques des Visiteurs</span></h3>
+                                    <div class="stats-section-meta">
+                                        <span class="stats-last-update" id="visitorsLastUpdate">Dernière mise à jour : --</span>
+                                    </div>
+                                </div>
+                                <div class="stats-section-content">
+                                    <div class="stats-loading" id="visitorsLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Chargement des statistiques visiteurs...</p>
+                                    </div>
+                                    <div class="stats-table-container" id="visitorsTableContainer" style="display: none;">
+                                        <table class="stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Visiteurs</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="visitorsTableBody">
+                                                <!-- Visitors data will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="stats-empty" id="visitorsEmpty" style="display: none;">
+                                        <i class="fas fa-users"></i>
+                                        <p>Aucune donnée de visite disponible</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-section-card">
+                                <div class="stats-section-header">
+                                    <h3><span class="emoji">❓</span><span class="text">Statistiques FAQ</span></h3>
+                                    <div class="stats-section-meta">
+                                        <span class="stats-last-update" id="faqLastUpdate">Dernière mise à jour : --</span>
+                                    </div>
+                                </div>
+                                <div class="stats-section-content">
+                                    <div class="stats-loading" id="faqStatsLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Chargement des statistiques FAQ...</p>
+                                    </div>
+                                    <div class="stats-table-container" id="faqStatsTableContainer" style="display: none;">
+                                        <table class="stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID Question</th>
+                                                    <th>Question</th>
+                                                    <th>Clics</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="faqStatsTableBody">
+                                                <!-- FAQ stats will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="stats-empty" id="faqStatsEmpty" style="display: none;">
+                                        <i class="fas fa-question-circle"></i>
+                                        <p>Aucune donnée de clic FAQ disponible</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-section-card">
+                                <div class="stats-section-header">
+                                    <h3><span class="emoji">👤</span><span class="text">Statistiques Présentation</span></h3>
+                                    <div class="stats-section-meta">
+                                        <span class="stats-last-update" id="presentationLastUpdate">Dernière mise à jour : --</span>
+                                    </div>
+                                </div>
+                                <div class="stats-section-content">
+                                    <div class="stats-loading" id="presentationStatsLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Chargement des statistiques présentation...</p>
+                                    </div>
+                                    <div class="stats-table-container" id="presentationStatsTableContainer" style="display: none;">
+                                        <table class="stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Nom de la Carte</th>
+                                                    <th>Clics</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="presentationStatsTableBody">
+                                                <!-- Presentation stats will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="stats-empty" id="presentationStatsEmpty" style="display: none;">
+                                        <i class="fas fa-address-card"></i>
+                                        <p>Aucune donnée de clic présentation disponible</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-section-card">
+                                <div class="stats-section-header">
+                                    <h3><span class="emoji">📧</span><span class="text">Statistiques Contact</span></h3>
+                                    <div class="stats-section-meta">
+                                        <span class="stats-last-update" id="contactLastUpdate">Dernière mise à jour : --</span>
+                                    </div>
+                                </div>
+                                <div class="stats-section-content">
+                                    <div class="stats-loading" id="contactStatsLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Chargement des statistiques contact...</p>
+                                    </div>
+                                    <div class="stats-table-container" id="contactStatsTableContainer" style="display: none;">
+                                        <table class="stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Envois</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="contactStatsTableBody">
+                                                <!-- Contact stats will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="stats-empty" id="contactStatsEmpty" style="display: none;">
+                                        <i class="fas fa-envelope"></i>
+                                        <p>Aucune donnée d'envoi de contact disponible</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stats-section-card">
+                                <div class="stats-section-header">
+                                    <h3><span class="emoji">📰</span><span class="text">Statistiques Articles</span></h3>
+                                    <div class="stats-section-meta">
+                                        <span class="stats-last-update" id="articlesLastUpdate">Dernière mise à jour : --</span>
+                                    </div>
+                                </div>
+                                <div class="stats-section-content">
+                                    <div class="stats-loading" id="articlesStatsLoading">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                        <p>Chargement des statistiques articles...</p>
+                                    </div>
+                                    <div class="stats-table-container" id="articlesStatsTableContainer" style="display: none;">
+                                        <table class="stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID Article</th>
+                                                    <th>Titre</th>
+                                                    <th>Clics</th>
+                                                    <th>Temps Cumulé</th>
+                                                    <th>Temps Moyen</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="articlesStatsTableBody">
+                                                <!-- Articles stats will be loaded here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="stats-empty" id="articlesStatsEmpty" style="display: none;">
+                                        <i class="fas fa-newspaper"></i>
+                                        <p>Aucune donnée de clic article disponible</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
