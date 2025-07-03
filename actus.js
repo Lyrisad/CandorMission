@@ -148,16 +148,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         if (latestUpdateElement && allArticles.length > 0) {
-            const latestArticle = allArticles[0]; // Assuming sorted by newest first
+            // Find the most recent article by sorting by date
+            const sortedArticles = [...allArticles].sort((a, b) => new Date(b.cree_le) - new Date(a.cree_le));
+            const latestArticle = sortedArticles[0];
+            
+            console.log('Latest article:', latestArticle.titre, 'Date:', latestArticle.cree_le);
+            
             const latestDate = new Date(latestArticle.cree_le);
             const now = new Date();
             
-            // Reset time to compare only dates
-            const latestDateOnly = new Date(latestDate.getFullYear(), latestDate.getMonth(), latestDate.getDate());
-            const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            console.log('Latest date:', latestDate);
+            console.log('Now:', now);
             
-            const diffTime = nowDateOnly.getTime() - latestDateOnly.getTime();
-            const diffDays = Math.floor(Math.abs(diffTime) / (1000 * 60 * 60 * 24));
+            // Compare dates using simple date comparison
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const articleDate = new Date(latestDate);
+            articleDate.setHours(0, 0, 0, 0);
+            
+            const diffTime = today.getTime() - articleDate.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            console.log('Article date (normalized):', articleDate);
+            console.log('Today (normalized):', today);
+            console.log('Difference in days:', diffDays);
             
             if (diffDays === 0) {
                 latestUpdateElement.textContent = 'Aujourd\'hui';
