@@ -783,7 +783,7 @@ body {
 
 @media (max-width: 480px) {
     .modal-container {
-        padding: 0.25rem 0.25rem 4rem 0.25rem;
+        padding: 0.50rem 0.50rem 8rem 0.25rem;
         overflow-x: hidden;
         overflow-y: auto;
         max-height: 100vh;
