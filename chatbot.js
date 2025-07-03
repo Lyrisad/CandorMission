@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let faqData = [];
     let categoriesData = [];
     let isTyping = false;
+    let profanityWarnings = 0; // Track profanity warnings
     
     // Common words to ignore in matching (French stop words)
     const stopWords = [
@@ -110,6 +111,31 @@ document.addEventListener('DOMContentLoaded', function() {
         'endroits': 'endroit',
         'emplacements': 'emplacement'
     };
+    
+    // Profanity filter - inappropriate words (French)
+    const profanityWords = [
+        // Common profanity
+        'merde', 'putain', 'bordel', 'salaud', 'salope', 'connard', 'connasse', 'enculé', 'encule',
+        'pute', 'fils de pute', 'fdp', 'batard', 'bâtard', 'chier', 'niquer', 'nique', 'tête de con',
+        'imbécile', 'crétin', 'abruti', 'débile', 'taré', 'attardé', 'mongol', 'trisomique',
+        
+        // Variations and leetspeak
+        'm3rd3', 'put41n', 'p0rn', 'sx3', 'f0utr3', 'b0rd3l', 'c0nn4rd', 'n1qu3r',
+        
+        // Racist/discriminatory terms
+        'négro', 'nègre', 'bamboula', 'bicot', 'bougnoule', 'youpin', 'pédale', 'tapette',
+        
+        // Sexual content
+        'sexe', 'bite', 'chatte', 'cul', 'seins', 'nichons', 'tétons', 'vagin', 'pénis',
+        'masturbation', 'porn', 'porno', 'pornographie', 'xxx', 'nude', 'nue', 'nu',
+        
+        // Drugs
+        'drogue', 'weed', 'cannabis', 'cocaine', 'héroïne', 'ecstasy', 'lsd', 'shit',
+        
+        // Violence threats
+        'tuer', 'mort', 'crever', 'buter', 'flingue', 'arme', 'violence', 'frapper',
+        'tabasser', 'cogner', 'exploser', 'niquer ta mère', 'ta gueule', 'ferme ta gueule'
+    ];
     
     // Initialize chatbot
     init();
@@ -295,10 +321,236 @@ document.addEventListener('DOMContentLoaded', function() {
         isTyping = false;
     }
     
+    // Check for profanity in message
+    function containsProfanity(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        // Remove special characters and split into words
+        const words = lowerMessage
+            .replace(/[^\w\sàâäéèêëïîôöùûüÿç]/g, ' ')
+            .split(/\s+/)
+            .filter(word => word.length > 0);
+        
+        // Check for direct matches
+        const directMatches = words.filter(word => profanityWords.includes(word));
+        if (directMatches.length > 0) {
+            return { hasProfanity: true, words: directMatches };
+        }
+        
+        // Check for profanity within longer words or phrases
+        const containsMatch = profanityWords.some(profanity => lowerMessage.includes(profanity));
+        if (containsMatch) {
+            const matchedWords = profanityWords.filter(profanity => lowerMessage.includes(profanity));
+            return { hasProfanity: true, words: matchedWords };
+        }
+        
+        return { hasProfanity: false, words: [] };
+    }
+    
+    // Handle profanity warning
+    function handleProfanityWarning(detectedWords) {
+        profanityWarnings++;
+        
+        let warningMessage = '';
+        let isBlocked = false;
+        
+        if (profanityWarnings === 1) {
+            // First warning - gentle
+            const firstWarnings = [
+                "🚫 Veuillez utiliser un langage approprié. Je suis là pour vous aider de manière professionnelle.",
+                "⚠️ Merci de rester poli dans vos messages. Comment puis-je vous aider aujourd'hui ?",
+                "🤝 Gardons une conversation respectueuse. Que souhaitez-vous savoir ?"
+            ];
+            warningMessage = firstWarnings[Math.floor(Math.random() * firstWarnings.length)];
+        } else if (profanityWarnings === 2) {
+            // Second warning - more firm
+            const secondWarnings = [
+                "🚨 <strong>Deuxième avertissement</strong> - Merci de surveiller votre langage.",
+                "⚠️ <strong>Attention</strong> - Utilisez un vocabulaire approprié pour continuer.",
+                "🛑 <strong>Rappel</strong> - Gardez un ton professionnel dans vos messages."
+            ];
+            warningMessage = secondWarnings[Math.floor(Math.random() * secondWarnings.length)];
+        } else if (profanityWarnings === 3) {
+            // Third warning - final warning
+            warningMessage = "🚫 <strong>Dernier avertissement</strong> - Un langage inapproprié supplémentaire entraînera une suspension temporaire.";
+        } else {
+            // Block after 3 warnings
+            isBlocked = true;
+            warningMessage = "🚫 <strong>Conversation suspendue</strong> - Vous avez dépassé le nombre d'avertissements autorisés. Veuillez actualiser la page pour recommencer.";
+        }
+        
+        // Add warning message
+        setTimeout(() => {
+            hideTypingIndicator();
+            addMessage(warningMessage, 'bot', true);
+            
+            if (isBlocked) {
+                // Disable input after final warning
+                chatbotInput.disabled = true;
+                chatbotSend.disabled = true;
+                chatbotInput.placeholder = "Chat suspendu - Actualisez la page";
+                
+                // Add final message
+                setTimeout(() => {
+                    const finalMessage = `
+                        <p>🔒 <strong>Pour continuer :</strong></p>
+                        <ul>
+                            <li>Actualisez la page (F5)</li>
+                            <li>Utilisez un langage respectueux</li>
+                            <li>Consultez nos FAQ pour des réponses rapides</li>
+                        </ul>
+                    `;
+                    addMessage(finalMessage, 'bot', true);
+                }, 1000);
+            } else {
+                // Add helpful suggestion for non-blocked warnings
+                setTimeout(() => {
+                    const helpMessage = `
+                        <p>💡 <strong>Suggestions :</strong></p>
+                        <ul>
+                            <li>Reformulez votre question poliment</li>
+                            <li>Tapez <strong>/help</strong> pour voir les commandes</li>
+                            <li>Consultez nos FAQ sur la page</li>
+                        </ul>
+                        <p><small>Avertissement ${profanityWarnings}/3</small></p>
+                    `;
+                    addMessage(helpMessage, 'bot', true);
+                }, 500);
+            }
+        }, 800);
+    }
+    
+    // Check for company/mission questions
+    function handleCompanyQuestions(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        // Keywords for company/mission questions
+        const companyKeywords = [
+            'candor ma mission', 'candor mission', 'votre entreprise', 'votre société', 'votre mission',
+            'qui êtes-vous', 'que faites-vous', 'c\'est quoi candor', 'présentation entreprise',
+            'raison d\'être', 'objectifs', 'vision', 'valeurs', 'qui vous êtes'
+        ];
+        
+        const isCompanyQuestion = companyKeywords.some(keyword => lowerMessage.includes(keyword));
+        
+        if (isCompanyQuestion) {
+            const companyResponse = `
+                <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; padding: 1.5rem; border-radius: 15px; margin: 0.5rem 0;">
+                    <h3 style="margin: 0 0 1rem 0; text-align: center;">🏢 CANDOR MA MISSION</h3>
+                </div>
+                
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #3b82f6; margin: 1rem 0;">
+                    <h4 style="margin: 0 0 1rem 0; color: #1e40af;">🎯 NOTRE RAISON D'ÊTRE :</h4>
+                    <p style="margin: 0.5rem 0; line-height: 1.6;"><strong>Convaincus</strong> que les métiers de la propreté sont essentiels au bien-être dans notre Société,</p>
+                    <p style="margin: 0.5rem 0; line-height: 1.6;"><strong>Forts</strong> de notre indépendance et de notre ancrage local,</p>
+                    <p style="margin: 0.5rem 0; line-height: 1.6;">Nous souhaitons développer une <strong>approche transparente et innovante</strong> de notre métier, le rendre visible et l'humaniser.</p>
+                </div>
+                
+                <div style="background: rgba(139, 92, 246, 0.1); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #8b5cf6; margin: 1rem 0;">
+                    <h4 style="margin: 0 0 1rem 0; color: #7c3aed;">⚡ NOS OBJECTIFS :</h4>
+                    <ol style="margin: 0; padding-left: 1.5rem; line-height: 1.7;">
+                        <li style="margin: 0.5rem 0;"><strong>Faire de la qualité, de la proximité et de la transparence</strong> les fondements de toutes nos relations</li>
+                        <li style="margin: 0.5rem 0;"><strong>Favoriser le bien-être, l'inclusion et l'accompagnement</strong> de nos collaborateurs</li>
+                        <li style="margin: 0.5rem 0;"><strong>Sensibiliser et engager</strong> nos clients et partenaires autour de notre vision des métiers de la propreté</li>
+                    </ol>
+                </div>
+                
+                <p style="text-align: center; margin-top: 1rem; color: #64748b;">
+                    <em>Une mission qui nous anime chaque jour ! ✨</em>
+                </p>
+            `;
+            
+            return companyResponse;
+        }
+        
+        return null;
+    }
+    
+    // Check for casual greetings and social questions
+    function handleSocialQuestions(message) {
+        const lowerMessage = message.toLowerCase().trim();
+        
+        // Social greetings and questions
+        const socialPatterns = [
+            // How are you patterns
+            /comment (ça|ca) va/i,
+            /comment allez.vous/i,
+            /vous allez bien/i,
+            /ça va/i,
+            /ca va/i,
+            /tout va bien/i,
+            /comment vous portez.vous/i,
+            
+            // Simple greetings
+            /^(salut|hello|coucou|hey|bonjour|bonsoir)$/i,
+            /^(comment vas.tu|comment tu vas)$/i,
+            
+            // Status questions
+            /comment vous sentez.vous/i,
+            /êtes.vous en forme/i,
+            /vous vous portez bien/i
+        ];
+        
+        const isSocialQuestion = socialPatterns.some(pattern => pattern.test(lowerMessage));
+        
+        if (isSocialQuestion) {
+            const socialResponses = [
+                {
+                    text: "🤖 Bonjour ! Je vais très bien, merci ! Je suis là pour vous aider avec toutes vos questions sur Candor Ma Mission et nos services de propreté.",
+                    follow: "Comment puis-je vous être utile aujourd'hui ? 😊"
+                },
+                {
+                    text: "👋 Salut ! Ça va parfaitement bien de mon côté ! Je suis votre assistant virtuel, toujours prêt à répondre à vos questions.",
+                    follow: "Que souhaitez-vous savoir sur nos services ? 💡"
+                },
+                {
+                    text: "😊 Hello ! Je me porte à merveille, merci de demander ! Je suis ici pour vous accompagner et répondre à toutes vos interrogations.",
+                    follow: "N'hésitez pas à me poser vos questions ! 🚀"
+                },
+                {
+                    text: "🌟 Bonjour ! Tout va super bien ! En tant qu'assistant IA de Candor Ma Mission, je suis toujours en forme pour vous aider.",
+                    follow: "Qu'aimeriez-vous découvrir sur notre entreprise ou nos services ? 🏢"
+                },
+                {
+                    text: "💫 Coucou ! Je vais très bien, merci beaucoup ! Je suis ravi de pouvoir discuter avec vous et de vous renseigner.",
+                    follow: "Posez-moi toutes vos questions, je suis là pour ça ! ✨"
+                }
+            ];
+            
+            const randomResponse = socialResponses[Math.floor(Math.random() * socialResponses.length)];
+            
+            const socialHTML = `
+                <p>${randomResponse.text}</p>
+                <div style="background: rgba(34, 197, 94, 0.1); padding: 1rem; border-radius: 10px; border-left: 3px solid #22c55e; margin: 1rem 0;">
+                    <p style="margin: 0; color: #16a34a;"><strong>${randomResponse.follow}</strong></p>
+                </div>
+            `;
+            
+            return socialHTML;
+        }
+        
+        return null;
+    }
+    
     // Process user message
     function processUserMessage(message) {
         // Handle special commands first
         if (handleSpecialCommands(message)) {
+            return;
+        }
+        
+        // Check for profanity
+        const profanityCheck = containsProfanity(message);
+        if (profanityCheck.hasProfanity) {
+            console.warn('🚫 Profanity detected:', profanityCheck.words);
+            
+            // If chat is already disabled, ignore the message completely
+            if (chatbotInput.disabled) {
+                return;
+            }
+            
+            showTypingIndicator();
+            handleProfanityWarning(profanityCheck.words);
             return;
         }
         
@@ -307,6 +559,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Simulate thinking time
         setTimeout(() => {
             hideTypingIndicator();
+            
+            // Check for company/mission questions first
+            const companyResponse = handleCompanyQuestions(message);
+            if (companyResponse) {
+                addMessage(companyResponse, 'bot', true);
+                return;
+            }
+            
+            // Check for social questions
+            const socialResponse = handleSocialQuestions(message);
+            if (socialResponse) {
+                addMessage(socialResponse, 'bot', true);
+                return;
+            }
             
             // Find matching FAQ
             const matches = findFAQMatches(message);
@@ -513,7 +779,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <strong>Exemples de questions :</strong><br>
                     • "Comment faire pour..."<br>
                     • "Où puis-je trouver..."<br>
-                    • "Quels sont vos services ?"
+                    • "Quels sont vos services ?"<br><br>
+                    <strong>Commandes disponibles :</strong><br>
+                    • <strong>/help</strong> - Affiche cette aide<br>
+                    • <strong>/reset</strong> - Efface la conversation<br>
+                    • <strong>/clean</strong> - Recommence avec un langage propre
                 </div>
             `;
             addMessage(helpHTML, 'bot', true);
@@ -529,6 +799,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             addMessage("💫 Chat réinitialisé ! Comment puis-je vous aider ?", 'bot');
+            return true;
+        }
+        
+        if (command === '/clean' || command === 'clean') {
+            // Reset profanity warnings and re-enable chat
+            const previousWarnings = profanityWarnings;
+            profanityWarnings = 0;
+            chatbotInput.disabled = false;
+            chatbotSend.disabled = false;
+            chatbotInput.placeholder = "Tapez votre question...";
+            
+            let cleanMessage = '';
+            if (previousWarnings > 0) {
+                cleanMessage = `✨ <strong>Nouveau départ !</strong> Vos ${previousWarnings} avertissement${previousWarnings > 1 ? 's ont' : ' a'} été effacé${previousWarnings > 1 ? 's' : ''}. Continuons avec un langage respectueux ! 🤝`;
+            } else {
+                cleanMessage = "✨ <strong>Pas d'avertissement en cours !</strong> Continuez à utiliser un langage respectueux. 👍";
+            }
+            
+            addMessage(cleanMessage, 'bot', true);
             return true;
         }
         
