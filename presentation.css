@@ -693,11 +693,13 @@ body {
     }
 
     .modal-container {
-        padding: 0.5rem;
+        padding: 0.5rem 0.5rem 4rem 0.5rem;
         align-items: center;
         justify-content: flex-start;
         min-height: 100vh;
+        max-height: 100vh;
         overflow-y: auto;
+        box-sizing: border-box;
     }
     
     .modal-card-section {
@@ -781,8 +783,11 @@ body {
 
 @media (max-width: 480px) {
     .modal-container {
-        padding: 0.25rem;
+        padding: 0.25rem 0.25rem 4rem 0.25rem;
         overflow-x: hidden;
+        overflow-y: auto;
+        max-height: 100vh;
+        box-sizing: border-box;
     }
     
     .modal-card-wrapper {
