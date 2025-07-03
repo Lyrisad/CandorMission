@@ -849,7 +849,8 @@ function doGet(e) {
               image_url: row[3] || '',
               cree_le: row[4],
               modifie_le: row[5] || '',
-              visible: row[6] === true || row[6] === 'TRUE'
+              visible: row[6] === true || row[6] === 'TRUE',
+              titre_couleur: row[7] || '#2D1B69'
             };
             articles.push(article);
           }
@@ -864,6 +865,7 @@ function doGet(e) {
       var contenu = e.parameter.contenu;
       var image_url = e.parameter.image_url || '';
       var visible = e.parameter.visible === 'true';
+      var titre_couleur = e.parameter.titre_couleur || '#2D1B69';
       
       if (!articlesSheet) {
         result.success = false;
@@ -882,7 +884,8 @@ function doGet(e) {
           image_url,
           now,
           '', // modifie_le (empty for new articles)
-          visible === 'true' || visible === true
+          visible === 'true' || visible === true,
+          titre_couleur
         ];
         
         articlesSheet.appendRow(newRow);
@@ -902,6 +905,7 @@ function doGet(e) {
       var contenu = e.parameter.contenu;
       var image_url = e.parameter.image_url;
       var visible = e.parameter.visible;
+      var titre_couleur = e.parameter.titre_couleur;
       
       if (!articlesSheet) {
         result.success = false;
@@ -922,6 +926,7 @@ function doGet(e) {
             if (contenu !== undefined && contenu !== null) articlesSheet.getRange(i + 1, 3).setValue(contenu);
             if (image_url !== undefined && image_url !== null) articlesSheet.getRange(i + 1, 4).setValue(image_url);
             if (visible !== undefined && visible !== null) articlesSheet.getRange(i + 1, 7).setValue(visible === 'true' || visible === true);
+            if (titre_couleur !== undefined && titre_couleur !== null) articlesSheet.getRange(i + 1, 8).setValue(titre_couleur);
             
             // Update modification date
             articlesSheet.getRange(i + 1, 6).setValue(now);

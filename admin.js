@@ -1,5 +1,9 @@
 // Admin Panel JavaScript
 
+// Global variables for rich text editor
+let quillEditor = null;
+let currentTitleColor = '#2D1B69';
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const loginForm = document.getElementById('adminLoginForm');
@@ -103,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Simulate API call delay
         setTimeout(() => {
             // Check credentials
-            if (username === 'admin' && password === 'admin123') {
+            if (username === 'AdminCandor' && password === 'CandorMaMission2025') {
                 // Store login state
                 const loginData = {
                     username: username,
@@ -1404,7 +1408,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 hideCategoriesLoading();
                 if (data.success && data.values) {
-                    faqCategories = data.values;
+                    // Sort categories by creation date - newest first
+                    faqCategories = data.values.sort((a, b) => new Date(b.cree_le) - new Date(a.cree_le));
                     filteredCategories = [...faqCategories]; // Initialize filtered categories
                     renderCategories();
                     updateCategorySelects();
@@ -1438,7 +1443,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 hideQuestionsLoading();
                 if (data.success && data.values) {
-                    faqQuestions = data.values;
+                    // Sort questions by creation date - newest first
+                    faqQuestions = data.values.sort((a, b) => new Date(b.cree_le) - new Date(a.cree_le));
                     filteredQuestions = [...faqQuestions]; // Initialize filtered questions
                     renderQuestions();
                     
@@ -2923,7 +2929,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 hideNewsLoading();
                 if (data.success && data.values) {
-                    newsArticles = data.values;
+                    // Sort articles by creation date - newest first
+                    newsArticles = data.values.sort((a, b) => new Date(b.cree_le) - new Date(a.cree_le));
                     filteredArticles = [...newsArticles]; // Initialize filtered articles
                     renderArticles();
                     updateNewsSearchResults();
@@ -2980,26 +2987,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.createElement('div');
         element.className = 'article-item';
         
-        // Format content preview (first 150 characters)
-        const contentPreview = article.contenu ? 
-            (article.contenu.length > 150 ? article.contenu.substring(0, 150) + '...' : article.contenu) : 
-            'Aucun contenu';
+        // Format content preview (first 150 characters, strip HTML tags)
+        let contentPreview = 'Aucun contenu';
+        if (article.contenu) {
+            // Strip HTML tags for preview
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = article.contenu;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            contentPreview = textContent.length > 150 ? 
+                textContent.substring(0, 150) + '...' : 
+                textContent;
+        }
+        
+        // Get title color
+        const titleColor = article.titre_couleur || '#2D1B69';
         
         element.innerHTML = `
             <div class="article-header">
                 <div class="article-info">
-                    <div class="article-title">${escapeHtml(article.titre)}</div>
+                    <div class="article-title" style="color: ${titleColor};">${escapeHtml(article.titre)}</div>
                     <div class="article-content">${escapeHtml(contentPreview)}</div>
                     <div class="article-meta">
                         <span>Créé le: ${formatDate(article.cree_le)}</span>
                         ${article.modifie_le ? `<span>Modifié le: ${formatDate(article.modifie_le)}</span>` : ''}
                         ${article.image_url ? `<span><i class="fas fa-image"></i> Avec image</span>` : ''}
+                        ${article.titre_couleur && article.titre_couleur !== '#2D1B69' ? `<span><i class="fas fa-palette"></i> Titre personnalisé</span>` : ''}
                         <span class="visibility-status ${article.visible ? 'visible' : 'hidden'}">
                             ${article.visible ? 'Visible' : 'Masqué'}
                         </span>
                     </div>
                 </div>
                 <div class="article-actions">
+                    <button class="article-action-btn preview-article-btn" data-article-id="${article.id}" title="Prévisualiser">
+                        <i class="fas fa-search"></i>
+                    </button>
                     <button class="article-action-btn edit-article-btn" data-article-id="${article.id}" title="Modifier">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -3014,10 +3035,12 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Add event listeners
+        const previewBtn = element.querySelector('.preview-article-btn');
         const editBtn = element.querySelector('.edit-article-btn');
         const toggleBtn = element.querySelector('.toggle-visibility-btn');
         const deleteBtn = element.querySelector('.delete-article-btn');
         
+        previewBtn.addEventListener('click', () => previewArticle(article.id));
         editBtn.addEventListener('click', () => editArticle(article.id));
         toggleBtn.addEventListener('click', () => toggleArticleVisibility(article.id));
         deleteBtn.addEventListener('click', () => deleteArticle(article.id));
@@ -3029,23 +3052,52 @@ document.addEventListener('DOMContentLoaded', function() {
     function openArticleModal(articleId = null) {
         currentEditingArticle = articleId;
         
+        // Show modal first
+        articleModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Initialize color picker
+        initializeColorPicker();
+        
         if (articleId) {
             const article = newsArticles.find(a => a.id === articleId);
             if (article) {
                 document.getElementById('articleModalTitle').textContent = '📰 Modifier l\'Article';
                 document.getElementById('articleTitle').value = article.titre;
-                document.getElementById('articleContent').value = article.contenu || '';
                 document.getElementById('articleImageUrl').value = article.image_url || '';
                 document.getElementById('articleVisible').checked = article.visible;
+                
+                // Set title color if available
+                if (article.titre_couleur) {
+                    currentTitleColor = article.titre_couleur;
+                    document.getElementById('articleTitleColor').value = article.titre_couleur;
+                    document.getElementById('titleColorPreview').textContent = article.titre_couleur;
+                    document.getElementById('titleColorPreview').style.color = article.titre_couleur;
+                } else {
+                    // Set default color for editing
+                    currentTitleColor = '#2D1B69';
+                    document.getElementById('articleTitleColor').value = '#2D1B69';
+                    document.getElementById('titleColorPreview').textContent = '#2D1B69';
+                    document.getElementById('titleColorPreview').style.color = '#2D1B69';
+                }
+                
+                // Initialize Quill Editor and set content after initialization
+                initializeQuillEditorWithContent(article.contenu);
             }
         } else {
             document.getElementById('articleModalTitle').textContent = '📰 Nouvel Article';
             articleForm.reset();
             document.getElementById('articleVisible').checked = true;
+            
+            // Reset title color
+            currentTitleColor = '#2D1B69';
+            document.getElementById('articleTitleColor').value = '#2D1B69';
+            document.getElementById('titleColorPreview').textContent = '#2D1B69';
+            document.getElementById('titleColorPreview').style.color = '#2D1B69';
+            
+            // Initialize empty Quill editor
+            initializeQuillEditorWithContent('');
         }
-        
-        articleModal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
     }
     
     function closeArticleModal() {
@@ -3053,15 +3105,432 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = 'auto';
         currentEditingArticle = null;
         articleForm.reset();
+        
+        // Clean up Quill editor properly
+        destroyQuillEditor();
+    }
+    
+    // Properly destroy Quill editor instance
+    function destroyQuillEditor() {
+        if (quillEditor) {
+            try {
+                // Remove all event listeners
+                quillEditor.off('text-change');
+                
+                // Get the container before destroying
+                const editorContainer = document.getElementById('articleContentEditor');
+                
+                // Destroy the Quill instance
+                delete quillEditor;
+                quillEditor = null;
+                
+                // Clean up DOM elements
+                if (editorContainer) {
+                    // Remove all child elements
+                    while (editorContainer.firstChild) {
+                        editorContainer.removeChild(editorContainer.firstChild);
+                    }
+                    
+                    // Reset classes
+                    editorContainer.className = '';
+                    editorContainer.removeAttribute('style');
+                }
+                
+                        // Remove any orphaned Quill toolbars and containers from the entire document
+                const quillElements = document.querySelectorAll('.ql-toolbar, .ql-container, .ql-editor, .ql-tooltip');
+                quillElements.forEach(element => {
+                    if (element && element.parentNode) {
+                        try {
+                            element.parentNode.removeChild(element);
+                        } catch (e) {
+                            // Element might already be removed
+                            console.warn('Could not remove Quill element:', e);
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error destroying Quill editor:', error);
+                
+                // Force cleanup even if there's an error
+                const editorContainer = document.getElementById('articleContentEditor');
+                if (editorContainer) {
+                    editorContainer.innerHTML = '';
+                    editorContainer.className = '';
+                }
+                quillEditor = null;
+            }
+        }
+    }
+    
+    // Initialize Quill Rich Text Editor with content
+    function initializeQuillEditorWithContent(content = '') {
+        // Clean up any existing editor first
+        destroyQuillEditor();
+        
+        // Check if Quill is available
+        if (typeof Quill === 'undefined') {
+            console.error('Quill is not loaded');
+            return;
+        }
+        
+        // Ensure the container exists and is completely clean
+        const editorContainer = document.getElementById('articleContentEditor');
+        if (!editorContainer) {
+            console.error('Editor container not found');
+            return;
+        }
+        
+        // Completely clean the container
+        editorContainer.innerHTML = '';
+        editorContainer.className = '';
+        
+        // Remove any Quill-related elements that might still exist globally
+        const existingQuillElements = document.querySelectorAll('.ql-toolbar, .ql-container, .ql-editor');
+        existingQuillElements.forEach(element => {
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        });
+        
+        // Wait a small moment to ensure DOM is clean, then create instance with content
+        setTimeout(() => {
+            createQuillInstanceWithContent(content);
+        }, 50);
+    }
+    
+    // Initialize Quill Rich Text Editor (legacy function for compatibility)
+    function initializeQuillEditor() {
+        initializeQuillEditorWithContent('');
+    }
+    
+    // Create the actual Quill instance with content
+    function createQuillInstanceWithContent(content = '') {
+        const editorContainer = document.getElementById('articleContentEditor');
+        if (!editorContainer) {
+            console.error('Editor container not found during creation');
+            return;
+        }
+        
+        // Configure Quill with extensive toolbar
+        const toolbarOptions = [
+            // Text formatting
+            ['bold', 'italic', 'underline', 'strike'],
+            
+            // Text style
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'font': [] }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            
+            // Colors
+            [{ 'color': [] }, { 'background': [] }],
+            
+            // Text alignment
+            [{ 'align': [] }],
+            
+            // Lists
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            
+            // Links and media
+            ['link', 'image', 'video'],
+            
+            // Text direction
+            [{ 'direction': 'rtl' }],
+            
+            // Quotes and code
+            ['blockquote', 'code-block'],
+            
+            // Clear formatting
+            ['clean']
+        ];
+        
+        // Initialize Quill
+        try {
+            // Double-check that no Quill instance exists
+            if (quillEditor) {
+                console.warn('Quill editor already exists, destroying first');
+                destroyQuillEditor();
+            }
+            
+            quillEditor = new Quill('#articleContentEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions,
+                    history: {
+                        delay: 2000,
+                        maxStack: 500,
+                        userOnly: true
+                    }
+                },
+                placeholder: 'Rédigez le contenu de votre article...',
+                readOnly: false
+            });
+            
+            // Force placeholder update on text changes
+            quillEditor.on('text-change', function() {
+                const editor = quillEditor.root;
+                if (editor.textContent.trim() === '') {
+                    editor.classList.add('ql-blank');
+                } else {
+                    editor.classList.remove('ql-blank');
+                }
+            });
+            
+            // Add custom CSS for better appearance
+            const quillContainer = document.querySelector('.ql-container');
+            if (quillContainer) {
+                quillContainer.style.fontSize = '14px';
+                quillContainer.style.lineHeight = '1.6';
+            }
+            
+            console.log('Quill editor initialized successfully');
+            
+            // Set content after Quill is fully initialized
+            if (content && content.trim() !== '') {
+                // Check if content is HTML or plain text
+                const isHtml = /<[a-z][\s\S]*>/i.test(content);
+                if (isHtml) {
+                    quillEditor.root.innerHTML = content;
+                } else {
+                    quillEditor.setText(content);
+                }
+                
+                // Remove the ql-blank class if content was added
+                const editor = quillEditor.root;
+                if (editor.textContent.trim() !== '') {
+                    editor.classList.remove('ql-blank');
+                }
+                
+                console.log('Content set in Quill editor:', content.substring(0, 50) + '...');
+            }
+            
+        } catch (error) {
+            console.error('Error initializing Quill:', error);
+        }
+    }
+    
+    // Create the actual Quill instance (legacy function for compatibility)
+    function createQuillInstance() {
+        createQuillInstanceWithContent('');
+    }
+    
+    // Initialize Color Picker
+    function initializeColorPicker() {
+        const colorPicker = document.getElementById('articleTitleColor');
+        const colorPreview = document.getElementById('titleColorPreview');
+        
+        if (colorPicker && colorPreview) {
+            // Set initial values
+            colorPicker.value = currentTitleColor;
+            colorPreview.textContent = currentTitleColor;
+            colorPreview.style.color = currentTitleColor;
+            
+            // Handle color changes
+            colorPicker.addEventListener('input', function(e) {
+                currentTitleColor = e.target.value;
+                colorPreview.textContent = currentTitleColor;
+                colorPreview.style.color = currentTitleColor;
+                
+                // Update title color in real-time
+                const titleInput = document.getElementById('articleTitle');
+                if (titleInput) {
+                    titleInput.style.color = currentTitleColor;
+                }
+            });
+            
+            // Handle color finalization
+            colorPicker.addEventListener('change', function(e) {
+                currentTitleColor = e.target.value;
+                colorPreview.textContent = currentTitleColor;
+                colorPreview.style.color = currentTitleColor;
+                
+                // Update title color
+                const titleInput = document.getElementById('articleTitle');
+                if (titleInput) {
+                    titleInput.style.color = currentTitleColor;
+                }
+            });
+        }
+    }
+    
+    // Article Preview Modal Functions
+    function openArticlePreviewModal(article) {
+        // Create or get preview modal
+        let previewModal = document.getElementById('articlePreviewModal');
+        if (!previewModal) {
+            createArticlePreviewModal();
+            previewModal = document.getElementById('articlePreviewModal');
+        }
+        
+        // Format date
+        const articleDate = new Date(article.cree_le);
+        const formattedDate = articleDate.toLocaleDateString('fr-FR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Check if article is new (less than 2 days old)
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - (2 * 24 * 60 * 60 * 1000));
+        const isNewArticle = articleDate > twoDaysAgo;
+
+        // Format content (detect if it's HTML or plain text)
+        const formattedContent = article.contenu ? 
+            (/<[a-z][\s\S]*>/i.test(article.contenu) ? 
+                article.contenu : 
+                article.contenu.replace(/\n/g, '<br>')) : 
+            'Aucun contenu disponible';
+
+        // Get title color
+        const titleColor = article.titre_couleur || '#2D1B69';
+
+        const previewModalBody = document.getElementById('articlePreviewModalBody');
+        previewModalBody.innerHTML = `
+            ${article.image_url ? `
+                <div class="modal-article-image">
+                    <img src="${article.image_url}" alt="${article.titre}" onerror="this.parentElement.innerHTML='<div class=\\'modal-article-image-placeholder\\'><i class=\\'fas fa-newspaper\\'></i></div>'">
+                </div>
+            ` : `
+                <div class="modal-article-image">
+                    <div class="modal-article-image-placeholder">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                </div>
+            `}
+            <div class="modal-article-meta">
+                <div class="article-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    ${formattedDate}
+                </div>
+                ${article.auteur ? `
+                    <div class="article-author">
+                        <i class="fas fa-user"></i>
+                        ${article.auteur}
+                    </div>
+                ` : ''}
+                ${article.modifie_le ? `
+                    <div class="article-modified">
+                        <i class="fas fa-edit"></i>
+                        Modifié le ${new Date(article.modifie_le).toLocaleDateString('fr-FR')}
+                    </div>
+                ` : ''}
+                <div class="article-status">
+                    <i class="fas fa-${article.visible ? 'eye' : 'eye-slash'}"></i>
+                    ${article.visible ? 'Article visible sur le site' : 'Article masqué du site'}
+                </div>
+            </div>
+            <h1 class="modal-article-title" style="color: ${titleColor};">${escapeHtml(article.titre)}</h1>
+            <div class="modal-article-content">
+                ${formattedContent}
+                <div class="article-signature">
+                    <p><em>Cet article a été rédigé par un administrateur Candor Ma Mission</em></p>
+                </div>
+            </div>
+        `;
+
+        // Update modal header
+        const previewModalHeader = document.querySelector('#articlePreviewModal .article-modal-header');
+        previewModalHeader.innerHTML = `
+            <div class="modal-header-content">
+                <div class="modal-header-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <div class="modal-header-title">Prévisualisation de l'article</div>
+            </div>
+            <button class="close-modal-btn" id="closeArticlePreviewModalBtn">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        // Add close button event listener
+        const closeBtn = document.getElementById('closeArticlePreviewModalBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeArticlePreviewModal);
+        }
+
+        // Show modal with animation
+        previewModal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Trigger animation after a small delay
+        setTimeout(() => {
+            previewModal.classList.add('show');
+        }, 10);
+    }
+    
+    function closeArticlePreviewModal() {
+        const previewModal = document.getElementById('articlePreviewModal');
+        if (!previewModal) return;
+        
+        // Add closing animation
+        previewModal.classList.add('closing');
+        
+        // Wait for animation to complete
+        setTimeout(() => {
+            previewModal.style.display = 'none';
+            previewModal.classList.remove('show', 'closing');
+            document.body.style.overflow = 'auto';
+        }, 300);
+    }
+    
+    function createArticlePreviewModal() {
+        const modal = document.createElement('div');
+        modal.id = 'articlePreviewModal';
+        modal.className = 'article-modal';
+        modal.innerHTML = `
+            <div class="article-modal-content">
+                <div class="article-modal-header">
+                    <button class="close-modal-btn" id="closeArticlePreviewModalBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="article-modal-body" id="articlePreviewModalBody">
+                    <!-- Article preview content will be loaded here -->
+                </div>
+            </div>
+        `;
+        
+        // Add modal to body
+        document.body.appendChild(modal);
+        
+        // Add click outside to close
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeArticlePreviewModal();
+            }
+        });
+        
+        // Add escape key to close
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.style.display === 'block') {
+                closeArticlePreviewModal();
+            }
+        });
     }
     
     function saveArticle() {
         const formData = new FormData(articleForm);
+        
+        // Get content from Quill editor
+        let contenu = '';
+        if (quillEditor) {
+            const quillContent = quillEditor.root.innerHTML;
+            // Only save HTML if it's not empty (Quill adds <p><br></p> for empty content)
+            if (quillContent && quillContent.trim() !== '<p><br></p>') {
+                contenu = quillContent;
+            }
+        }
+        
         const articleData = {
             titre: formData.get('articleTitle'),
-            contenu: formData.get('articleContent'),
+            contenu: contenu,
             image_url: formData.get('articleImageUrl') || '',
-            visible: formData.get('articleVisible') === 'on'
+            visible: formData.get('articleVisible') === 'on',
+            titre_couleur: currentTitleColor
         };
         
         // Validation
@@ -3076,7 +3545,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         const action = currentEditingArticle ? 'updateArticle' : 'addArticle';
-        const url = `${GOOGLE_SCRIPT_URL}?action=${action}${currentEditingArticle ? `&id=${currentEditingArticle}` : ''}&titre=${encodeURIComponent(articleData.titre)}&contenu=${encodeURIComponent(articleData.contenu)}&image_url=${encodeURIComponent(articleData.image_url)}&visible=${articleData.visible}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=${action}${currentEditingArticle ? `&id=${currentEditingArticle}` : ''}&titre=${encodeURIComponent(articleData.titre)}&contenu=${encodeURIComponent(articleData.contenu)}&image_url=${encodeURIComponent(articleData.image_url)}&visible=${articleData.visible}&titre_couleur=${encodeURIComponent(articleData.titre_couleur)}`;
         
         saveArticleBtn.disabled = true;
         saveArticleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enregistrement...';
@@ -3108,6 +3577,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Article Action Functions
+    function previewArticle(articleId) {
+        const article = newsArticles.find(a => a.id === articleId);
+        if (!article) return;
+        
+        openArticlePreviewModal(article);
+    }
+    
     function editArticle(articleId) {
         openArticleModal(articleId);
     }
@@ -3121,7 +3597,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const progressToast = showProgressToast(progressMessage);
         
         // Preserve all existing article data when only changing visibility
-        const url = `${GOOGLE_SCRIPT_URL}?action=updateArticle&id=${articleId}&titre=${encodeURIComponent(article.titre)}&contenu=${encodeURIComponent(article.contenu || '')}&image_url=${encodeURIComponent(article.image_url || '')}&visible=${newVisibility}`;
+        const url = `${GOOGLE_SCRIPT_URL}?action=updateArticle&id=${articleId}&titre=${encodeURIComponent(article.titre)}&contenu=${encodeURIComponent(article.contenu || '')}&image_url=${encodeURIComponent(article.image_url || '')}&visible=${newVisibility}&titre_couleur=${encodeURIComponent(article.titre_couleur || '#2D1B69')}`;
         
         fetch(url)
             .then(response => response.json())

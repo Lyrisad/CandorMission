@@ -100,7 +100,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Messages loaded:', data);
                 
                 if (data.success) {
-                    messages = data.values || [];
+                    // Sort messages by date - newest first
+                    messages = (data.values || []).sort((a, b) => new Date(b.date) - new Date(a.date));
                     renderMessages();
                     updateUnreadCount();
                 } else {
@@ -130,7 +131,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Archives loaded:', data);
                 
                 if (data.success) {
-                    archivedMessages = data.values || [];
+                    // Sort archived messages by archive date - newest first
+                    archivedMessages = (data.values || []).sort((a, b) => new Date(b.archiveDate) - new Date(a.archiveDate));
                     renderArchives();
                     updateArchivedCount();
                 } else {

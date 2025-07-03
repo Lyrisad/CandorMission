@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const nowDateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
             
             const diffTime = nowDateOnly.getTime() - latestDateOnly.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor(Math.abs(diffTime) / (1000 * 60 * 60 * 24));
             
             if (diffDays === 0) {
                 latestUpdateElement.textContent = 'Aujourd\'hui';
@@ -226,10 +226,22 @@ document.addEventListener('DOMContentLoaded', function() {
             day: 'numeric'
         });
 
-        // Create excerpt (first 150 characters)
-        const excerpt = article.contenu ? 
-            (article.contenu.length > 150 ? article.contenu.substring(0, 150) + '...' : article.contenu) : 
-            'Aucun contenu disponible';
+        // Check if article is new (less than 2 days old)
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - (2 * 24 * 60 * 60 * 1000)); // 2 days in milliseconds
+        const isNewArticle = articleDate > twoDaysAgo;
+
+        // Create excerpt (first 150 characters, strip HTML tags)
+        let excerpt = 'Aucun contenu disponible';
+        if (article.contenu) {
+            // Strip HTML tags for preview
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = article.contenu;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            excerpt = textContent.length > 150 ? 
+                textContent.substring(0, 150) + '...' : 
+                textContent;
+        }
 
         element.innerHTML = `
             <div class="article-image">
@@ -239,6 +251,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <i class="fas fa-newspaper"></i>
                     </div>`
                 }
+                ${isNewArticle ? `
+                    <div class="new-article-badge">
+                        <i class="fas fa-star"></i>
+                        Nouveau !
+                    </div>
+                ` : ''}
             </div>
             <div class="article-content">
                 <div class="article-meta">
@@ -253,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     ` : ''}
                 </div>
-                <h3 class="article-title">${escapeHtml(article.titre)}</h3>
+                <h3 class="article-title" style="color: ${article.titre_couleur || '#2D1B69'};">${escapeHtml(article.titre)}</h3>
                 <p class="article-excerpt">${escapeHtml(excerpt)}</p>
                 <div class="article-footer">
                     <button class="read-more-btn">
@@ -387,9 +405,16 @@ document.addEventListener('DOMContentLoaded', function() {
             minute: '2-digit'
         });
 
-        // Format content (convert line breaks to HTML)
+        // Check if article is new (less than 2 days old)
+        const now = new Date();
+        const twoDaysAgo = new Date(now.getTime() - (2 * 24 * 60 * 60 * 1000));
+        const isNewArticle = articleDate > twoDaysAgo;
+
+        // Format content (detect if it's HTML or plain text)
         const formattedContent = article.contenu ? 
-            article.contenu.replace(/\n/g, '<br>') : 
+            (/<[a-z][\s\S]*>/i.test(article.contenu) ? 
+                article.contenu : 
+                article.contenu.replace(/\n/g, '<br>')) : 
             'Aucun contenu disponible';
 
         articleModalBody.innerHTML = `
@@ -422,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 ` : ''}
             </div>
-            <h1 class="modal-article-title">${escapeHtml(article.titre)}</h1>
+            <h1 class="modal-article-title" style="color: ${article.titre_couleur || '#2D1B69'};">${escapeHtml(article.titre)}</h1>
             <div class="modal-article-content">
                 ${formattedContent}
                 <div class="article-signature">

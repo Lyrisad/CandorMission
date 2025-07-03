@@ -2,7 +2,7 @@
 // Fichier de configuration centralisé pour éviter la duplication d'URLs
 
 // URL du Google Apps Script (à modifier ici uniquement)
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2bPZHa05-zdpTgDzzX32Na5DiwrAOWm6S4OeKywoSYvMNjfnVrxReZUTOLyh5-24BtA/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCTEVhtUW2NWRlkdj5PsHd6Oxvejw8b0_SqOuAECemWMYUBtQUyY_sO__Ddhrh-BOYIA/exec';
 
 // Configuration EmailJS
 const EMAILJS_CONFIG = {

@@ -7,7 +7,7 @@
     // URL de votre Google Apps Script déployé
     // IMPORTANT: Remplacez cette URL par celle de votre Apps Script déployé
     // Vous la trouverez après avoir déployé votre script Google Apps Script
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby2bPZHa05-zdpTgDzzX32Na5DiwrAOWm6S4OeKywoSYvMNjfnVrxReZUTOLyh5-24BtA/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCTEVhtUW2NWRlkdj5PsHd6Oxvejw8b0_SqOuAECemWMYUBtQUyY_sO__Ddhrh-BOYIA/exec';
     
     /**
      * Vérifie si le visiteur a déjà été compté aujourd'hui

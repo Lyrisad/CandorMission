@@ -307,6 +307,53 @@ body {
     opacity: 0.7;
 }
 
+.new-article-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+    animation: newBadgePulse 2s ease-in-out infinite;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.new-article-badge i {
+    font-size: 0.75rem;
+    animation: starSpin 3s linear infinite;
+}
+
+@keyframes newBadgePulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+    }
+}
+
+@keyframes starSpin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 .article-content {
     padding: 1.5rem;
 }
@@ -631,6 +678,8 @@ body {
     border: 2px dashed #cbd5e0;
 }
 
+
+
 .modal-article-meta {
     display: flex;
     flex-wrap: wrap;
@@ -769,6 +818,8 @@ body {
     .modal-article-image-placeholder {
         height: 200px;
     }
+    
+
 }
 
 @media (max-width: 480px) {
@@ -816,6 +867,8 @@ body {
     .modal-article-image-placeholder {
         height: 150px;
     }
+    
+
 }
 
 /* Animations */
@@ -882,6 +935,20 @@ body {
     }
 }
 
+@media (max-width: 768px) {
+    .new-article-badge {
+        top: 12px;
+        right: 12px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        gap: 4px;
+    }
+    
+    .new-article-badge i {
+        font-size: 0.7rem;
+    }
+}
+
 @media (max-width: 480px) {
     .hero-title {
         font-size: 2rem;
@@ -920,5 +987,18 @@ body {
     
     .article-modal-body {
         padding: 1.5rem;
+    }
+    
+    .new-article-badge {
+        top: 10px;
+        right: 10px;
+        padding: 5px 8px;
+        font-size: 0.7rem;
+        gap: 3px;
+        border-radius: 15px;
+    }
+    
+    .new-article-badge i {
+        font-size: 0.65rem;
     }
 } 
