@@ -486,10 +486,11 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .article-modal.show {
@@ -502,7 +503,7 @@ body {
 
 .article-modal-content {
     position: absolute;
-    top: 55%;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.9);
     width: 90%;
@@ -564,6 +565,7 @@ body {
     font-size: 16px;
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
+    z-index: 10001;
 }
 
 .close-modal-btn:hover {
@@ -577,6 +579,7 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #cbd5e0 #f7fafc;
+    box-sizing: border-box;
 }
 
 .article-modal-body::-webkit-scrollbar {
@@ -718,6 +721,21 @@ body {
     text-decoration: underline;
 }
 
+.article-signature {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.article-signature p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-style: italic;
+    margin: 0;
+    opacity: 0.8;
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
     .article-modal-content {
@@ -734,7 +752,7 @@ body {
     }
     
     .article-modal-body {
-        padding: 20px;
+        padding: 20px 20px 4rem 20px;
         max-height: calc(95vh - 100px);
     }
     
@@ -756,6 +774,8 @@ body {
 @media (max-width: 480px) {
     .article-modal-content {
         width: 98%;
+        max-height: 95vh;
+        top: 50%;
         border-radius: 15px;
     }
     
@@ -772,7 +792,7 @@ body {
     }
     
     .article-modal-body {
-        padding: 15px;
+        padding: 15px 15px 4rem 15px;
     }
     
     .modal-article-title {
@@ -781,6 +801,15 @@ body {
     
     .modal-article-content {
         font-size: 15px;
+    }
+    
+    .article-signature {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+    }
+    
+    .article-signature p {
+        font-size: 0.85rem;
     }
     
     .modal-article-image img,

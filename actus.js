@@ -425,6 +425,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <h1 class="modal-article-title">${escapeHtml(article.titre)}</h1>
             <div class="modal-article-content">
                 ${formattedContent}
+                <div class="article-signature">
+                    <p><em>Cet article a été rédigé par un administrateur Candor Ma Mission</em></p>
+                </div>
             </div>
         `;
 
