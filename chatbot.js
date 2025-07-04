@@ -423,8 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Keywords for company/mission questions
         const companyKeywords = [
             'candor ma mission', 'candor mission', 'votre entreprise', 'votre société', 'votre mission',
-            'qui êtes-vous', 'que faites-vous', 'c\'est quoi candor', 'présentation entreprise',
-            'raison d\'être', 'objectifs', 'vision', 'valeurs', 'qui vous êtes'
+            'qui êtes-vous', 'que faites-vous', 'c\'est quoi candor', 'présentation entreprise'
         ];
         
         const isCompanyQuestion = companyKeywords.some(keyword => lowerMessage.includes(keyword));
@@ -574,9 +573,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const matches = findFAQMatches(message);
             
             if (matches.length > 0) {
-                // Return best match
-                const bestMatch = matches[0];
-                respondWithFAQ(bestMatch);
+                if (matches.length === 1) {
+                    // Single match - show directly
+                    respondWithFAQ(matches[0]);
+                } else {
+                    // Multiple matches - show options
+                    showMultipleFAQOptions(matches);
+                }
             } else {
                 // No match found, suggest contact
                 suggestContact(message);
@@ -736,6 +739,56 @@ document.addEventListener('DOMContentLoaded', function() {
         addMessage(responseHTML, 'bot', true);
     }
     
+    // Show multiple FAQ options
+    function showMultipleFAQOptions(matches) {
+        const responseHTML = `
+            <p>J'ai trouvé plusieurs réponses qui pourraient correspondre à votre question :</p>
+            <div class="faq-options">
+                ${matches.map((match, index) => {
+                    const { faq, score, category } = match;
+                    const categoryName = category ? category.nom : 'Général';
+                    const categoryEmoji = category ? category.emoji || '📋' : '📋';
+                    const confidence = score > 0.5 ? '🔍' : score > 0.3 ? '💡' : '❓';
+                    
+                    return `
+                        <div class="faq-option" onclick="selectFAQOption(${index})" data-index="${index}">
+                            <div class="option-header">
+                                <span class="option-icon">${confidence}</span>
+                                <span class="option-category">${categoryEmoji} ${escapeHtml(categoryName)}</span>
+                            </div>
+                            <div class="option-question">${escapeHtml(faq.question)}</div>
+                            <div class="option-preview">${escapeHtml(faq.reponse.substring(0, 100))}${faq.reponse.length > 100 ? '...' : ''}</div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+            <p><small>Cliquez sur l'option qui vous intéresse pour voir la réponse complète !</small></p>
+        `;
+        
+        addMessage(responseHTML, 'bot', true);
+        
+        // Store matches globally for selection
+        window.faqMatches = matches;
+    }
+
+    // Function to select FAQ option (called from HTML)
+    window.selectFAQOption = function(index) {
+        if (window.faqMatches && window.faqMatches[index]) {
+            const selectedMatch = window.faqMatches[index];
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                respondWithFAQ(selectedMatch);
+                
+                // Clear stored matches
+                window.faqMatches = null;
+            }, 800);
+        }
+    };
+    
     // Suggest contact when no match is found
     function suggestContact(userMessage) {
         const responses = [
@@ -779,7 +832,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <strong>Commandes disponibles :</strong><br>
                     • <strong>/help</strong> - Affiche cette aide<br>
                     • <strong>/reset</strong> - Efface la conversation<br>
-                    • <strong>/clean</strong> - Recommence avec un langage propre
+                    • <strong>/clean</strong> - Recommence avec un langage propre<br>
+                    • <strong>/carte</strong> - Affiche ma carte de présentation
                 </div>
             `;
             addMessage(helpHTML, 'bot', true);
@@ -817,8 +871,146 @@ document.addEventListener('DOMContentLoaded', function() {
             return true;
         }
         
+        if (command === '/carte' || command === 'carte') {
+            showChatbotCard();
+            return true;
+        }
+        
         return false;
     }
+    
+    // Show chatbot card modal
+    function showChatbotCard() {
+        // Create modal overlay
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'chatbot-card-modal-overlay';
+        modalOverlay.id = 'chatbotCardModal';
+        
+        // Create modal content
+        const modalContent = document.createElement('div');
+        modalContent.className = 'chatbot-card-modal-content';
+        
+        modalContent.innerHTML = `
+            <div class="chatbot-card">
+                <div class="card-header">
+                    <div class="card-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="card-title">
+                        <h3>🤖 Candy</h3>
+                        <p>Assistant FAQ Intelligent</p>
+                    </div>
+                    <button class="card-close-btn" onclick="closeChatbotCard()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="card-body">
+                    <div class="card-section">
+                        <h4>🎯 Ma Mission</h4>
+                        <p>Je suis votre assistant virtuel dédié à vous aider à trouver rapidement les réponses à vos questions sur Candor Ma Mission et nos services de propreté.</p>
+                    </div>
+                    
+                    <div class="card-section">
+                        <h4>⚡ Mes Capacités</h4>
+                        <ul>
+                            <li>🔍 Recherche intelligente dans la FAQ</li>
+                            <li>💬 Réponses personnalisées</li>
+                            <li>📋 Suggestions multiples</li>
+                            <li>🛡️ Filtrage de contenu inapproprié</li>
+                            <li>📱 Interface responsive</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="card-section">
+                        <h4>🎮 Commandes Disponibles</h4>
+                        <div class="commands-grid">
+                            <div class="command-item">
+                                <span class="command">/help</span>
+                                <span class="description">Aide et guide</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command">/reset</span>
+                                <span class="description">Nouvelle conversation</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command">/clean</span>
+                                <span class="description">Effacer avertissements</span>
+                            </div>
+                            <div class="command-item">
+                                <span class="command">/carte</span>
+                                <span class="description">Cette carte</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-section">
+                        <h4>📊 Statistiques</h4>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <span class="stat-number">${faqData.length}</span>
+                                <span class="stat-label">Questions FAQ</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">${categoriesData.length}</span>
+                                <span class="stat-label">Catégories</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">24/7</span>
+                                <span class="stat-label">Disponibilité</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-section">
+                        <h4>🎭 Hero Candy</h4>
+                        <p>Découvrez ma carte de héros officielle !</p>
+                        <button class="hero-candy-btn" onclick="showHeroCandy()">
+                            <i class="fas fa-star"></i>
+                            Voir ma carte de héros
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <p>💡 <strong>Conseil :</strong> Posez-moi vos questions en français naturel, je comprends même les formulations approximatives !</p>
+                </div>
+            </div>
+        `;
+        
+        modalOverlay.appendChild(modalContent);
+        document.body.appendChild(modalOverlay);
+        
+        // Add animation
+        setTimeout(() => {
+            modalOverlay.classList.add('show');
+        }, 10);
+        
+        // Close on overlay click
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === modalOverlay) {
+                closeChatbotCard();
+            }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('chatbotCardModal')) {
+                closeChatbotCard();
+            }
+        });
+    }
+
+    // Close chatbot card modal
+    window.closeChatbotCard = function() {
+        const modal = document.getElementById('chatbotCardModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+            }, 300);
+        }
+    };
     
     // Scroll to bottom of messages
     function scrollToBottom() {
@@ -833,4 +1025,64 @@ document.addEventListener('DOMContentLoaded', function() {
         div.textContent = text;
         return div.innerHTML;
     }
+
+    // Show Hero Candy card
+    window.showHeroCandy = function() {
+        // Create hero card modal overlay
+        const heroModalOverlay = document.createElement('div');
+        heroModalOverlay.className = 'hero-candy-modal-overlay';
+        heroModalOverlay.id = 'heroCandyModal';
+        
+        // Create hero card content
+        const heroCardContent = document.createElement('div');
+        heroCardContent.className = 'hero-candy-card';
+        
+        heroCardContent.innerHTML = `
+            <div class="hero-card-header">
+                <button class="hero-close-btn" onclick="closeHeroCandy()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="hero-card-image">
+                <img src="images/heros/Candy.png" alt="Hero Candy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="hero-image-placeholder" style="display: none;">
+                    <i class="fas fa-robot"></i>
+                    <p>Carte de héros Candy</p>
+                </div>
+            </div>
+        `;
+        
+        heroModalOverlay.appendChild(heroCardContent);
+        document.body.appendChild(heroModalOverlay);
+        
+        // Add animation
+        setTimeout(() => {
+            heroModalOverlay.classList.add('show');
+        }, 10);
+        
+        // Close on overlay click
+        heroModalOverlay.addEventListener('click', function(e) {
+            if (e.target === heroModalOverlay) {
+                closeHeroCandy();
+            }
+        });
+        
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && document.getElementById('heroCandyModal')) {
+                closeHeroCandy();
+            }
+        });
+    };
+
+    // Close Hero Candy modal
+    window.closeHeroCandy = function() {
+        const modal = document.getElementById('heroCandyModal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+            }, 300);
+        }
+    };
 }); 
