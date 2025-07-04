@@ -4,6 +4,9 @@
 let quillEditor = null;
 let currentTitleColor = '#2D1B69';
 
+// Admin permissions
+let currentAdminType = null; // 'full' for AdminCandor, 'limited' for AdminCom
+
 document.addEventListener('DOMContentLoaded', function() {
     // Elements
     const loginForm = document.getElementById('adminLoginForm');
@@ -106,11 +109,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Simulate API call delay
         setTimeout(() => {
-            // Check credentials
+            // Check credentials for full admin
             if (username === 'AdminCandor' && password === 'CandorMaMission2025') {
+                currentAdminType = 'full';
+                
                 // Store login state
                 const loginData = {
                     username: username,
+                    adminType: currentAdminType,
                     timestamp: new Date().getTime(),
                     remember: remember
                 };
@@ -122,7 +128,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Add log entry
-                addLog('Connexion admin');
+                addLog('Connexion admin complet');
+                
+                // Show success animation
+                showLoginSuccess();
+                
+                // Switch to dashboard after animation
+                setTimeout(() => {
+                    showDashboard();
+                    loadDashboardData();
+                }, 1500);
+                
+            } 
+            // Check credentials for limited admin
+            else if (username === 'AdminCom' && password === 'CandorCommunication') {
+                currentAdminType = 'limited';
+                
+                // Store login state
+                const loginData = {
+                    username: username,
+                    adminType: currentAdminType,
+                    timestamp: new Date().getTime(),
+                    remember: remember
+                };
+                
+                if (remember) {
+                    localStorage.setItem('adminLogin', JSON.stringify(loginData));
+                } else {
+                    sessionStorage.setItem('adminLogin', JSON.stringify(loginData));
+                }
+                
+                // Add log entry
+                addLog('Connexion admin limité');
                 
                 // Show success animation
                 showLoginSuccess();
@@ -172,17 +209,32 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if login is still valid (24 hours)
             if (now - loginTime < 24 * 60 * 60 * 1000) {
+                // Set admin type from stored data
+                currentAdminType = data.adminType || 'full';
                 showDashboard();
                 loadDashboardData();
             } else {
                 // Login expired
                 localStorage.removeItem('adminLogin');
                 sessionStorage.removeItem('adminLogin');
+                currentAdminType = null;
                 showLoginForm();
             }
         } else {
+            currentAdminType = null;
             showLoginForm();
         }
+    }
+    
+    // Function to check admin permissions
+    function hasPermission(feature) {
+        if (currentAdminType === 'full') {
+            return true; // Full admin has access to everything
+        } else if (currentAdminType === 'limited') {
+            // Limited admin can only access news management
+            return feature === 'news';
+        }
+        return false; // No admin type set
     }
     
     // Show dashboard
@@ -202,6 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (dashCards) dashCards.style.display = 'grid';
         if (logsEl) logsEl.style.display = 'block';
         
+        // Apply permissions based on admin type
+        applyAdminPermissions();
+        
         // Add entrance animation
         dashboardContainer.style.opacity = '0';
         dashboardContainer.style.transform = 'translateY(20px)';
@@ -211,6 +266,70 @@ document.addEventListener('DOMContentLoaded', function() {
             dashboardContainer.style.opacity = '1';
             dashboardContainer.style.transform = 'translateY(0)';
         }, 100);
+    }
+    
+    // Function to apply admin permissions
+    function applyAdminPermissions() {
+        if (currentAdminType === 'limited') {
+            // Disable buttons for limited admin
+            const messageCard = document.querySelector('.admin-card:nth-child(1) .card-btn');
+            const faqCard = document.querySelector('.admin-card:nth-child(2) .card-btn');
+            const statsCard = document.querySelector('.admin-card:nth-child(4) .card-btn');
+            
+            if (messageCard) {
+                messageCard.disabled = true;
+                messageCard.style.opacity = '0.5';
+                messageCard.style.cursor = 'not-allowed';
+                messageCard.title = 'Accès non autorisé pour cet administrateur';
+            }
+            
+            if (faqCard) {
+                faqCard.disabled = true;
+                faqCard.style.opacity = '0.5';
+                faqCard.style.cursor = 'not-allowed';
+                faqCard.title = 'Accès non autorisé pour cet administrateur';
+            }
+            
+            if (statsCard) {
+                statsCard.disabled = true;
+                statsCard.style.opacity = '0.5';
+                statsCard.style.cursor = 'not-allowed';
+                statsCard.title = 'Accès non autorisé pour cet administrateur';
+            }
+            
+            // Hide logs section for limited admin
+            const logsSection = document.querySelector('.logs-section');
+            if (logsSection) {
+                logsSection.style.display = 'none';
+            }
+            
+            // Update welcome message
+            const welcomeText = document.querySelector('.dashboard-welcome');
+            if (welcomeText) {
+                welcomeText.innerHTML = `Bienvenue, <strong>${currentAdminType === 'limited' ? 'Admin Communication' : 'Admin'}</strong> ! 👋<br><small>Accès limité - Gestion des actualités uniquement</small>`;
+            }
+        } else {
+            // Full admin - enable all buttons
+            const allCards = document.querySelectorAll('.admin-card .card-btn');
+            allCards.forEach(card => {
+                card.disabled = false;
+                card.style.opacity = '1';
+                card.style.cursor = 'pointer';
+                card.title = '';
+            });
+            
+            // Show logs section for full admin
+            const logsSection = document.querySelector('.logs-section');
+            if (logsSection) {
+                logsSection.style.display = 'block';
+            }
+            
+            // Update welcome message
+            const welcomeText = document.querySelector('.dashboard-welcome');
+            if (welcomeText) {
+                welcomeText.innerHTML = `Bienvenue, <strong>Admin</strong> ! 👋<br><small>Accès complet au panneau d'administration</small>`;
+            }
+        }
     }
     
     // Show login form
@@ -1132,6 +1251,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // FAQ Management Elements
     const manageFaqBtn = document.getElementById('manageFaqBtn');
+    const manageMessagesBtn = document.getElementById('manageMessagesBtn');
+    const manageStatsBtn = document.getElementById('manageStatsBtn');
     const faqManagementSection = document.getElementById('faqManagementSection');
     const backToDashboardBtn = document.getElementById('backToDashboardBtn');
     const refreshFaqBtn = document.getElementById('refreshFaqBtn');
@@ -1211,6 +1332,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // FAQ Event Listeners
     if (manageFaqBtn) {
         manageFaqBtn.addEventListener('click', showFAQManagement);
+    }
+    
+    if (manageMessagesBtn) {
+        manageMessagesBtn.addEventListener('click', showMessages);
     }
     
     if (backToDashboardBtn) {
@@ -1347,12 +1472,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show FAQ Management
     function showFAQManagement() {
+        // Check permissions
+        if (!hasPermission('faq')) {
+            showError('🔒 Accès non autorisé. Vous n\'avez pas les permissions nécessaires pour accéder à cette section.');
+            return;
+        }
+        
         dashboardCards.style.display = 'none';
         logsSection.style.display = 'none';
         faqManagementSection.style.display = 'block';
         
         // Load FAQ data
         loadFAQManagementData();
+    }
+    
+    // Show Messages Management
+    function showMessages() {
+        // Check permissions
+        if (!hasPermission('messages')) {
+            showError('🔒 Accès non autorisé. Vous n\'avez pas les permissions nécessaires pour accéder à cette section.');
+            return;
+        }
+        
+        // Redirect to inbox page
+        window.location.href = 'inbox.html';
     }
     
     // Return to Dashboard from FAQ Management
@@ -3935,7 +4078,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // ==============================================
     
     // DOM Elements for Statistics
-    const manageStatsBtn = document.getElementById('manageStatsBtn');
     const statisticsSection = document.getElementById('statisticsSection');
     const backToDashboardFromStatsBtn = document.getElementById('backToDashboardFromStatsBtn');
     const refreshStatsBtn = document.getElementById('refreshStatsBtn');
@@ -3955,6 +4097,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show Statistics Section
     function showStatistics() {
+        // Check permissions
+        if (!hasPermission('stats')) {
+            showError('🔒 Accès non autorisé. Vous n\'avez pas les permissions nécessaires pour accéder à cette section.');
+            return;
+        }
+        
         dashboardCards.style.display = 'none';
         logsSection.style.display = 'none';
         faqManagementSection.style.display = 'none';
