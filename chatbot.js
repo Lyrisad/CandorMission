@@ -125,10 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Racist/discriminatory terms
         'négro', 'nègre', 'bamboula', 'bicot', 'bougnoule', 'youpin', 'pédale', 'tapette',
         
-        // Sexual content
-        'sexe', 'bite', 'chatte', 'cul', 'seins', 'nichons', 'tétons', 'vagin', 'pénis',
-        'masturbation', 'porn', 'porno', 'pornographie', 'xxx', 'nude', 'nue', 'nu',
-        
         // Drugs
         'drogue', 'weed', 'cannabis', 'cocaine', 'héroïne', 'ecstasy', 'lsd', 'shit',
         
