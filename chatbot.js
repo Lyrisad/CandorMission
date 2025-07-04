@@ -1038,16 +1038,18 @@ document.addEventListener('DOMContentLoaded', function() {
         heroCardContent.className = 'hero-candy-card';
         
         heroCardContent.innerHTML = `
-            <div class="hero-card-header">
-                <button class="hero-close-btn" onclick="closeHeroCandy()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="hero-card-image">
-                <img src="images/heros/Candy.png" alt="Hero Candy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                <div class="hero-image-placeholder" style="display: none;">
-                    <i class="fas fa-robot"></i>
-                    <p>Carte de héros Candy</p>
+            <div class="hero-card-wrapper">
+                <div class="hero-card-header">
+                    <button class="hero-close-btn" onclick="closeHeroCandy()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="hero-card-image">
+                    <img src="images/heros/Candy.png" alt="Hero Candy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="hero-image-placeholder" style="display: none;">
+                        <i class="fas fa-robot"></i>
+                        <p>Carte de héros Candy</p>
+                    </div>
                 </div>
             </div>
         `;
